@@ -1,0 +1,80 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check if user is signed in
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user has admin role or is the super admin
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'rifat6teen@gmail.com' ||
+        (exists(/databases/$(database)/documents/players/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/players/$(request.auth.uid)).data.get('role', 'player') == 'admin')
+      );
+    }
+
+    // Profile update requests rules
+    match /profile_update_requests/{requestId} {
+      // Allow any signed-in user to create a request for themselves
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+
+      // Users can read their own requests, admins can read all
+      allow read: if isSignedIn() && (
+        (resource != null && resource.data.userId == request.auth.uid) ||
+        isAdmin()
+      );
+
+      // Only admins can approve/reject or delete requests
+      allow update, delete: if isAdmin();
+    }
+
+    // Player profiles rules
+    match /players/{playerId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (request.auth.uid == playerId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Tournaments rules
+    match /tournaments/{tournamentId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Registrations rules
+    match /registrations/{regId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // Matches rules
+    match /matches/{matchId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Groups rules
+    match /groups/{groupId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Season History rules
+    match /season_history/{seasonId} {
+      allow read: if true;
+      allow write: if false; // Only Cloud Functions (Admin SDK) should write here
+    }
+
+    // Fallback for other data
+    match /{path=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

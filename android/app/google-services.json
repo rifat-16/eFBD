@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "483811394988",
+    "project_id": "efootballersbd",
+    "storage_bucket": "efootballersbd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:483811394988:android:edd9b45a8a7a9fd71f2609",
+        "android_client_info": {
+          "package_name": "com.example.efbd"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwvCelo2XHb7hZBeqbwU0lwEj_oFOFJ7A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
