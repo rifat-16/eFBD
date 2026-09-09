@@ -126,24 +126,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               TextFormField(
                                 controller: _nameController,
                                 style: const TextStyle(color: Colors.white),
+                                autovalidateMode: AutovalidateMode.onUserInteraction,
                                 decoration: const InputDecoration(
                                   labelText: 'Full Name (Real Name)',
                                   prefixIcon: Icon(Icons.person_outline),
                                 ),
-                                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                                validator: (v) => v == null || v.trim().isEmpty ? 'Real name is required' : null,
                               ),
                               const SizedBox(height: 20),
                               TextFormField(
                                 controller: _emailController,
                                 style: const TextStyle(color: Colors.white),
+                                autovalidateMode: AutovalidateMode.onUserInteraction,
                                 keyboardType: TextInputType.emailAddress,
                                 decoration: const InputDecoration(
                                   labelText: 'Email Address',
                                   prefixIcon: Icon(Icons.email_outlined),
                                 ),
                                 validator: (v) {
-                                  if (v == null || v.isEmpty) return 'Required';
-                                  if (!v.contains('@')) return 'Invalid email';
+                                  if (v == null || v.trim().isEmpty) return 'Email is required';
+                                  if (!v.contains('@') || !v.contains('.')) return 'Invalid email format';
                                   return null;
                                 },
                               ),
@@ -152,44 +154,56 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 controller: _passwordController,
                                 obscureText: true,
                                 style: const TextStyle(color: Colors.white),
+                                autovalidateMode: AutovalidateMode.onUserInteraction,
                                 decoration: const InputDecoration(
                                   labelText: 'Password',
                                   prefixIcon: Icon(Icons.lock_outline),
                                 ),
-                                validator: (v) => v == null || v.length < 6 ? 'Min 6 characters' : null,
+                                validator: (v) => v == null || v.trim().length < 6 ? 'Password must be at least 6 characters' : null,
                               ),
                               const SizedBox(height: 20),
                               TextFormField(
                                 controller: _ignController,
                                 style: const TextStyle(color: Colors.white),
+                                autovalidateMode: AutovalidateMode.onUserInteraction,
                                 decoration: const InputDecoration(
                                   labelText: 'In-Game Name (IGN)',
                                   prefixIcon: Icon(Icons.videogame_asset_outlined),
                                 ),
-                                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                                validator: (v) => v == null || v.trim().isEmpty ? 'IGN is required' : null,
                               ),
                               const SizedBox(height: 20),
                               TextFormField(
                                 controller: _whatsappController,
                                 style: const TextStyle(color: Colors.white),
+                                autovalidateMode: AutovalidateMode.onUserInteraction,
                                 keyboardType: TextInputType.phone,
                                 decoration: const InputDecoration(
                                   labelText: 'WhatsApp Number',
                                   prefixIcon: Icon(Icons.phone_outlined),
                                   hintText: 'e.g. 017xxxxxxxx',
                                 ),
-                                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) return 'WhatsApp number is required';
+                                  if (v.trim().length < 11) return 'Enter a valid phone number';
+                                  return null;
+                                },
                               ),
                               const SizedBox(height: 20),
                               TextFormField(
                                 controller: _efootballUidController,
                                 style: const TextStyle(color: Colors.white),
+                                autovalidateMode: AutovalidateMode.onUserInteraction,
                                 decoration: const InputDecoration(
                                   labelText: 'eFootball UID',
                                   prefixIcon: Icon(Icons.badge_outlined),
                                   hintText: '9-digit UID',
                                 ),
-                                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) return 'UID is required';
+                                  if (v.trim().length < 9) return 'UID must be at least 9 digits';
+                                  return null;
+                                },
                               ),
                               const SizedBox(height: 32),
                               SizedBox(

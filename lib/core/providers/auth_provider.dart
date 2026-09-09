@@ -17,6 +17,15 @@ class AuthProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isInitialized => _isInitialized;
   bool get isAuthenticated => _user != null;
+  
+  bool get isProfileComplete {
+    if (_playerProfile == null) return false;
+    return _playerProfile!.name.trim().isNotEmpty &&
+           _playerProfile!.ign.trim().isNotEmpty &&
+           _playerProfile!.uid.trim().isNotEmpty &&
+           (_playerProfile!.whatsapp?.trim().isNotEmpty ?? false);
+  }
+
   bool get isAdmin {
     final email = _user?.email?.toLowerCase() ?? _auth.currentUser?.email?.toLowerCase();
     return _playerProfile?.role == 'admin' || email == 'rifat6teen@gmail.com';

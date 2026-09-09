@@ -235,6 +235,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextFormField(
                                 controller: _emailController,
                                 style: const TextStyle(color: Colors.white),
+                                autovalidateMode: AutovalidateMode.onUserInteraction,
                                 decoration: const InputDecoration(
                                   labelText: 'Email Address',
                                   hintText: 'Enter your email',
@@ -242,8 +243,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 keyboardType: TextInputType.emailAddress,
                                 validator: (value) {
-                                  if (value == null || value.isEmpty) return 'Please enter your email';
-                                  if (!value.contains('@')) return 'Please enter a valid email';
+                                  if (value == null || value.trim().isEmpty) return 'Please enter your email';
+                                  if (!value.contains('@') || !value.contains('.')) return 'Please enter a valid email';
                                   return null;
                                 },
                               ),
@@ -252,6 +253,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 controller: _passwordController,
                                 obscureText: _obscurePassword,
                                 style: const TextStyle(color: Colors.white),
+                                autovalidateMode: AutovalidateMode.onUserInteraction,
                                 decoration: InputDecoration(
                                   labelText: 'Password',
                                   hintText: 'Enter your password',
@@ -262,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ),
                                 validator: (value) {
-                                  if (value == null || value.isEmpty) return 'Please enter your password';
+                                  if (value == null || value.trim().isEmpty) return 'Please enter your password';
                                   if (value.length < 6) return 'Password must be at least 6 characters';
                                   return null;
                                 },

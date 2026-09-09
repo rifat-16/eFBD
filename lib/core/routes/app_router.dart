@@ -12,6 +12,7 @@ import '../../features/tournament/views/tournament_list_screen.dart';
 import '../../features/tournament/views/tournament_detail_screen.dart';
 import '../../features/leaderboard/views/leaderboard_screen.dart';
 import '../../features/match_hub/views/match_hub_screen.dart';
+import '../../features/auth/views/complete_profile_screen.dart';
 import '../widgets/app_header.dart';
 import '../widgets/app_drawer.dart';
 
@@ -36,8 +37,10 @@ class AppRouter {
               path: '/',
               builder: (context, state) => const TournamentListScreen(),
               redirect: (context, state) {
-                if (authProvider.isAuthenticated && authProvider.isAdmin) {
-                  return '/admin';
+                if (authProvider.isAuthenticated) {
+                  if (!authProvider.isInitialized) return null;
+                  if (!authProvider.isProfileComplete && !authProvider.isAdmin) return '/complete-profile';
+                  if (authProvider.isAdmin) return '/admin';
                 }
                 return null;
               },
@@ -47,10 +50,20 @@ class AppRouter {
               builder: (context, state) => TournamentDetailScreen(
                 tournamentId: state.pathParameters['id']!,
               ),
+              redirect: (context, state) {
+                if (authProvider.isAuthenticated && !authProvider.isInitialized) return null;
+                if (authProvider.isAuthenticated && !authProvider.isProfileComplete && !authProvider.isAdmin) return '/complete-profile';
+                return null;
+              },
             ),
             GoRoute(
               path: '/matches',
               builder: (context, state) => const MatchHubScreen(),
+              redirect: (context, state) {
+                if (authProvider.isAuthenticated && !authProvider.isInitialized) return null;
+                if (authProvider.isAuthenticated && !authProvider.isProfileComplete && !authProvider.isAdmin) return '/complete-profile';
+                return null;
+              },
             ),
             GoRoute(
               path: '/leaderboard',
@@ -65,6 +78,15 @@ class AppRouter {
               builder: (context, state) => const SeasonHistoryScreen(),
             ),
           ],
+        ),
+        GoRoute(
+          path: '/complete-profile',
+          builder: (context, state) => const CompleteProfileScreen(),
+          redirect: (context, state) {
+            if (!authProvider.isAuthenticated) return '/login';
+            if (authProvider.isInitialized && authProvider.isProfileComplete) return '/';
+            return null;
+          },
         ),
         GoRoute(
           path: '/login',

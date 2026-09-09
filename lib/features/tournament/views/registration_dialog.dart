@@ -50,8 +50,13 @@ class _TournamentRegistrationDialogState extends State<TournamentRegistrationDia
       if (_nameController.text.isEmpty) _nameController.text = authProvider.playerProfile!.name;
       if (_ignController.text.isEmpty) _ignController.text = authProvider.playerProfile!.ign;
       if (_uidController.text.isEmpty) _uidController.text = authProvider.playerProfile!.uid;
-      _whatsappController.text = authProvider.playerProfile?.whatsapp ?? '';
+      if (_whatsappController.text.isEmpty) _whatsappController.text = authProvider.playerProfile?.whatsapp ?? '';
     }
+
+    final bool isProfileIncomplete = _nameController.text.isEmpty || 
+                                     _ignController.text.isEmpty || 
+                                     _uidController.text.isEmpty || 
+                                     _whatsappController.text.isEmpty;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -91,6 +96,51 @@ class _TournamentRegistrationDialogState extends State<TournamentRegistrationDia
                 style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13),
               ),
               const Divider(height: 32, color: Colors.white10),
+              
+              if (isProfileIncomplete) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentRed.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppTheme.accentRed.withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.warning_amber_rounded, color: AppTheme.accentRed, size: 32),
+                      const SizedBox(height: 12),
+                      Text(
+                        'PROFILE INCOMPLETE',
+                        style: GoogleFonts.rajdhani(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.accentRed,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Please complete your profile (IGN, UID, WhatsApp) in settings before registering for a tournament.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white70, fontSize: 13),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          // We don't have a direct route to profile edit but we can prompt user
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.accentRed,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('GO TO PROFILE'),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
               
               if (_errorMessage != null) ...[
                 Container(
