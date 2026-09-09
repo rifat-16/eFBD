@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
         String userFriendlyError = 'Login failed. Please try again.';
         final errorStr = e.toString().toLowerCase();
         
-        if (errorStr.contains('user-not-found') || errorStr.contains('wrong-password') || errorStr.contains('invalid-credential')) {
+        if (errorStr.contains('user-not-found') || errorStr.contains('wrong-password') || errorStr.contains('invalid-credential') || errorStr.contains('user-disabled')) {
           userFriendlyError = 'Invalid email or password. Please check your credentials.';
         } else if (errorStr.contains('network-request-failed')) {
           userFriendlyError = 'Network error. Please check your internet connection.';
@@ -59,6 +59,84 @@ class _LoginScreenState extends State<LoginScreen> {
         _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       }
     }
+  }
+
+  void _showForgotPasswordDialog() {
+    final emailController = TextEditingController(text: _emailController.text);
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.cardBackground,
+        title: Text(
+          'Reset Password',
+          style: GoogleFonts.rajdhani(color: AppTheme.primaryGold, fontWeight: FontWeight.bold),
+        ),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Enter your registered email address to receive a password reset link.',
+                style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: emailController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Email Address',
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) return 'Please enter your email';
+                  if (!value.contains('@')) return 'Please enter a valid email';
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: AppTheme.textGrey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (formKey.currentState!.validate()) {
+                final authProvider = context.read<AuthProvider>();
+                Navigator.pop(context);
+                
+                try {
+                  await authProvider.sendPasswordResetEmail(emailController.text);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Password reset link sent! Check your email.'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error: ${e.toString()}'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              }
+            },
+            child: const Text('Send Link'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -193,9 +271,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: TextButton(
-                                  onPressed: () {
-                                    // TODO: Implement forgot password
-                                  },
+                                  onPressed: _showForgotPasswordDialog,
                                   child: const Text('Forgot Password?', style: TextStyle(fontSize: 12)),
                                 ),
                               ),

@@ -148,6 +148,15 @@ class AuthProvider with ChangeNotifier {
     await _auth.signOut();
   }
 
+  Future<void> sendPasswordResetEmail(String email) async {
+    _setLoading(true);
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim().toLowerCase());
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
