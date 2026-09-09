@@ -5,6 +5,7 @@ A comprehensive tournament and player management system for the eFootball commun
 ## Core Features
 
 ### 1. Profile & Identity Management (New)
+- **Password Recovery:** Integrated Firebase-backed password reset system allowing users to recover accounts via secure email links.
 - **Profile Update Requests:** Players can request changes to sensitive data (Real Name, IGN, eFootball UID, WhatsApp). 
 - **Admin Approval Workflow:** Admins review change requests, seeing a side-by-side comparison of old vs. new data before approving or rejecting with a reason.
 - **Pending State Protection:** Users are prevented from submitting multiple overlapping update requests.
