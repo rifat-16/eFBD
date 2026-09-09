@@ -1,1 +1,64 @@
-{"firestore":{"rules":"firestore.rules"},"hosting":{"public":"build/web","ignore":["firebase.json","**/.*","**/node_modules/**"],"rewrites":[{"source":"**","destination":"/index.html"}]},"functions":[{"source":"functions","codebase":"default","ignore":["node_modules",".git","firebase-debug.log","firestore-debug.log","ui-debug.log"]}],"flutter":{"platforms":{"android":{"default":{"projectId":"efootballersbd","appId":"1:483811394988:android:edd9b45a8a7a9fd71f2609","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"efootballersbd","appId":"1:483811394988:ios:8069679668ae37a31f2609","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"efootballersbd","configurations":{"android":"1:483811394988:android:edd9b45a8a7a9fd71f2609","ios":"1:483811394988:ios:8069679668ae37a31f2609","web":"1:483811394988:web:d6bbb86a2d0d50c61f2609"}}}}}}
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firestore-debug.log",
+        "ui-debug.log"
+      ]
+    }
+  ],
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "efootballersbd",
+          "appId": "1:483811394988:android:edd9b45a8a7a9fd71f2609",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "efootballersbd",
+          "appId": "1:483811394988:ios:8069679668ae37a31f2609",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "efootballersbd",
+          "configurations": {
+            "android": "1:483811394988:android:edd9b45a8a7a9fd71f2609",
+            "ios": "1:483811394988:ios:8069679668ae37a31f2609",
+            "web": "1:483811394988:web:d6bbb86a2d0d50c61f2609"
+          }
+        }
+      }
+    }
+  }
+}
