@@ -214,11 +214,14 @@ class _ProfileDialogState extends State<ProfileDialog> {
                                   'createdAt': FieldValue.serverTimestamp(),
                                 };
 
+                                final dialogNav = Navigator.of(dialogContext);
+                                final rootMessenger = ScaffoldMessenger.of(this.context);
+
                                 await DatabaseService().submitProfileUpdateRequest(requestData);
                                 
                                 if (mounted) {
-                                  Navigator.of(dialogContext).pop();
-                                  ScaffoldMessenger.of(this.context).showSnackBar(
+                                  dialogNav.pop();
+                                  rootMessenger.showSnackBar(
                                     const SnackBar(
                                       backgroundColor: AppTheme.accentGreen,
                                       content: Text('Update request submitted! Admin will review it and notify you.'),
@@ -260,6 +263,90 @@ class _ProfileDialogState extends State<ProfileDialog> {
       whatsappEditController.dispose();
       reasonEditController.dispose();
     });
+  }
+
+  void _showForgotPasswordDialog({String? initialEmail}) {
+    final emailController = TextEditingController(
+      text: initialEmail ?? _emailController.text,
+    );
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppTheme.cardBackground,
+        title: Text(
+          'Reset Password',
+          style: GoogleFonts.rajdhani(
+            color: AppTheme.primaryGold,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Enter your registered email address to receive a password reset link.',
+                style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: emailController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Email Address',
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) return 'Please enter your email';
+                  if (!value.contains('@')) return 'Please enter a valid email';
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel', style: TextStyle(color: AppTheme.textGrey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (formKey.currentState!.validate()) {
+                final authProvider = context.read<AuthProvider>();
+                final messenger = ScaffoldMessenger.of(context);
+                Navigator.pop(dialogContext);
+
+                try {
+                  await authProvider.sendPasswordResetEmail(emailController.text);
+                  if (mounted) {
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Password reset link sent! Check your email.'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text('Error: ${e.toString()}'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              }
+            },
+            child: const Text('Send Link'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -880,6 +967,24 @@ class _ProfileDialogState extends State<ProfileDialog> {
                   ),
                   validator: (val) => val == null || val.length < 6 ? 'Password must be at least 6 characters' : null,
                 ),
+                if (_isLogin) ...[
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => _showForgotPasswordDialog(),
+                      child: Text(
+                        'FORGOT PASSWORD?',
+                        style: GoogleFonts.rajdhani(
+                          color: AppTheme.primaryGold,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
               const SizedBox(height: 40),
               if (widget.player != null) ...[
@@ -976,14 +1081,36 @@ class _ProfileDialogState extends State<ProfileDialog> {
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      final userEmail = widget.player?.email ?? authProvider.user?.email;
+                      _showForgotPasswordDialog(initialEmail: userEmail);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: AppTheme.primaryGold.withValues(alpha: 0.5)),
+                    ),
+                    icon: const Icon(Icons.lock_reset, color: AppTheme.primaryGold, size: 18),
+                    label: Text(
+                      'RESET PASSWORD',
+                      style: GoogleFonts.rajdhani(
+                        color: AppTheme.primaryGold,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
                   child: TextButton.icon(
                     onPressed: () async {
                       final navigator = Navigator.of(context);
-                      final scaffoldContext = context;
+                      final router = GoRouter.of(context);
                       await authProvider.signOut();
                       if (navigator.mounted) {
                         navigator.pop();
-                        scaffoldContext.go('/');
+                        router.go('/');
                       }
                     },
                     icon: const Icon(Icons.logout, color: Colors.redAccent, size: 18),
