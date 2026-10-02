@@ -13,6 +13,7 @@ import '../../../core/theme/app_theme.dart';
 import 'widgets/tournament_create_form.dart';
 import '../../../core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -509,23 +510,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Future<void> _quickVerifyMatches() async {
     if (_selectedTournamentId.isEmpty) return;
-    
+
     final matchesStream = DatabaseService().getMatches(_selectedTournamentId);
     final matches = await matchesStream.first;
     final db = DatabaseService();
     final random = Random();
     int count = 0;
-    
+
     for (var match in matches) {
       if (!match.isVerified) {
         int score1 = random.nextInt(5);
         int score2 = random.nextInt(5);
-        
+
         // Ensure no draws for testing knockout progression
         while (score1 == score2) {
           score2 = random.nextInt(5);
         }
-        
+
         final updatedMatch = match.copyWith(
           player1Score: score1,
           player2Score: score2,
@@ -536,7 +537,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         count++;
       }
     }
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -624,7 +625,32 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           DataCell(Text(p.ign, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.primaryGold))),
                           DataCell(Text(p.email, style: GoogleFonts.poppins(fontSize: 13))),
                           DataCell(Text(p.uid, style: GoogleFonts.poppins(fontSize: 13))),
-                          DataCell(Text(p.whatsapp ?? '-', style: GoogleFonts.poppins(fontSize: 13))),
+                          DataCell(
+                            InkWell(
+                              onTap: () {
+                                if (p.whatsapp != null && p.whatsapp!.isNotEmpty) {
+                                  Clipboard.setData(ClipboardData(text: p.whatsapp!));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('WhatsApp number copied: ${p.whatsapp}'),
+                                      duration: const Duration(seconds: 2),
+                                      backgroundColor: AppTheme.accentGreen,
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(p.whatsapp ?? '-', style: GoogleFonts.poppins(fontSize: 13)),
+                                  if (p.whatsapp != null && p.whatsapp!.isNotEmpty) ...[
+                                    const SizedBox(width: 4),
+                                    const Icon(Icons.copy_rounded, size: 14, color: AppTheme.primaryGold),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
                           DataCell(Text(p.totalPoints.toString(), style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, fontSize: 15))),
                           DataCell(Text('${p.champions}🏆 ${p.runnersUp}🥈', style: GoogleFonts.poppins(fontSize: 13))),
                           DataCell(Row(
@@ -1123,20 +1149,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       letterSpacing: 1.5,
                     ),
                   ),
-                  if (_selectedTournamentId.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: ElevatedButton.icon(
-                        onPressed: () => _quickVerifyMatches(),
-                        icon: const Icon(Icons.bolt),
-                        label: Text('QUICK VERIFY',
-                            style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange.shade900,
-                          minimumSize: const Size(double.infinity, 45),
-                        ),
-                      ),
-                    ),
                 ],
               )
             : Row(
@@ -1151,14 +1163,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       letterSpacing: 1.5,
                     ),
                   ),
-                  if (_selectedTournamentId.isNotEmpty)
-                    ElevatedButton.icon(
-                      onPressed: () => _quickVerifyMatches(),
-                      icon: const Icon(Icons.bolt),
-                      label: Text('QUICK VERIFY ALL (TEST)',
-                          style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.orange.shade900),
-                    ),
                 ],
               ),
           const SizedBox(height: 32),

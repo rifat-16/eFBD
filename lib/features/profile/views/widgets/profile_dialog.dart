@@ -725,14 +725,20 @@ class _ProfileDialogState extends State<ProfileDialog> {
                           backgroundColor: AppTheme.darkBackground,
                           backgroundImage: _imageBytes != null 
                               ? MemoryImage(_imageBytes!) 
-                              : (!kIsWeb && _currentPhotoUrl != null && _currentPhotoUrl!.isNotEmpty 
+                              : (!kIsWeb && _currentPhotoUrl != null && _currentPhotoUrl!.trim().isNotEmpty 
                                   ? NetworkImage(_currentPhotoUrl!) as ImageProvider 
                                   : null),
                           child: ClipOval(
-                            child: _imageBytes == null && (_currentPhotoUrl == null || _currentPhotoUrl!.isEmpty)
+                            child: _imageBytes == null && (_currentPhotoUrl == null || _currentPhotoUrl!.trim().isEmpty)
                               ? const Icon(Icons.person, size: 60, color: AppTheme.primaryGold)
-                              : (kIsWeb && _imageBytes == null && _currentPhotoUrl != null && _currentPhotoUrl!.isNotEmpty
-                                  ? WebSafeImage(imageUrl: _currentPhotoUrl!, width: 120, height: 120, fit: BoxFit.cover)
+                              : (kIsWeb && _imageBytes == null && _currentPhotoUrl != null && _currentPhotoUrl!.trim().isNotEmpty
+                                  ? WebSafeImage(
+                                      imageUrl: _currentPhotoUrl!,
+                                      width: 120,
+                                      height: 120,
+                                      fit: BoxFit.cover,
+                                      fallbackWidget: const Icon(Icons.person, size: 60, color: AppTheme.primaryGold),
+                                    )
                                   : null),
                           ),
                         ),

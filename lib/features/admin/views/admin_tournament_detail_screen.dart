@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/services/database_service.dart';
 import '../../../core/theme/app_theme.dart';
@@ -229,10 +230,65 @@ class _RegistrationsTabState extends State<RegistrationsTab> with AutomaticKeepA
           );
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(24),
-          itemCount: displayRegs.length,
-          itemBuilder: (context, index) => _RegistrationItem(reg: displayRegs[index], index: index),
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'TOTAL REGISTRATIONS: ${displayRegs.length}',
+                    style: GoogleFonts.rajdhani(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryGold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      final numbers = displayRegs
+                          .map((r) => r.playerWhatsapp.trim())
+                          .where((num) => num.isNotEmpty)
+                          .join(', ');
+                      if (numbers.isNotEmpty) {
+                        Clipboard.setData(ClipboardData(text: numbers));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${displayRegs.length} WhatsApp numbers copied!'),
+                            duration: const Duration(seconds: 2),
+                            backgroundColor: AppTheme.accentGreen,
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.copy_rounded, size: 16, color: AppTheme.primaryGold),
+                    label: Text(
+                      'COPY ALL NUMBERS',
+                      style: GoogleFonts.rajdhani(
+                        color: AppTheme.primaryGold,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppTheme.primaryGold),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(24),
+                itemCount: displayRegs.length,
+                itemBuilder: (context, index) => _RegistrationItem(reg: displayRegs[index], index: index),
+              ),
+            ),
+          ],
         );
       },
     );
@@ -291,9 +347,38 @@ class _RegistrationItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'WhatsApp: ${reg.playerWhatsapp}',
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.white70),
+                InkWell(
+                  onTap: () {
+                    if (reg.playerWhatsapp.isNotEmpty) {
+                      Clipboard.setData(ClipboardData(text: reg.playerWhatsapp));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('WhatsApp number copied: ${reg.playerWhatsapp}'),
+                          duration: const Duration(seconds: 2),
+                          backgroundColor: AppTheme.accentGreen,
+                        ),
+                      );
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(4),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'WhatsApp: ${reg.playerWhatsapp}',
+                          style: GoogleFonts.poppins(fontSize: 12, color: Colors.white70),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.copy_rounded,
+                          size: 14,
+                          color: AppTheme.primaryGold,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 Text(
                   'TrxID: ${reg.trxId}',
@@ -389,30 +474,16 @@ class _MatchesTabState extends State<MatchesTab> with AutomaticKeepAliveClientMi
                     'MATCH FIXTURES',
                     style: GoogleFonts.rajdhani(fontSize: 22, color: AppTheme.primaryGold, fontWeight: FontWeight.bold, letterSpacing: 1.5),
                   ),
-            Row(
-              children: [
-                if (t.status != TournamentStatus.completed)
-                  TextButton.icon(
-                    onPressed: () => _quickVerifyAllMatches(t.id),
-                    icon: const Icon(Icons.speed, color: AppTheme.accentGreen, size: 18),
-                    label: Text(
-                      'QUICK VERIFY',
-                      style: GoogleFonts.rajdhani(color: AppTheme.accentGreen, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.2),
-                    ),
-                  ),
-                const SizedBox(width: 8),
-                if (t.status != TournamentStatus.completed)
-                  ElevatedButton.icon(
-                    onPressed: () => _showGenerationOptions(context),
-                    icon: const Icon(Icons.auto_awesome, color: Colors.black),
-                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryGold),
-                    label: Text(
-                      'GENERATE',
-                      style: GoogleFonts.rajdhani(color: Colors.black, fontWeight: FontWeight.bold, letterSpacing: 1.2),
-                    ),
-                  ),
-              ],
-            ),
+            if (t.status != TournamentStatus.completed)
+              ElevatedButton.icon(
+                onPressed: () => _showGenerationOptions(context),
+                icon: const Icon(Icons.auto_awesome, color: Colors.black),
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryGold),
+                label: Text(
+                  'GENERATE',
+                  style: GoogleFonts.rajdhani(color: Colors.black, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                ),
+              ),
           ],
         ),
         const SizedBox(height: 24),
@@ -741,17 +812,17 @@ class _MatchesTabState extends State<MatchesTab> with AutomaticKeepAliveClientMi
     final matches = await matchesStream.first;
     final random = Random();
     int count = 0;
-    
+
     for (var match in matches) {
       if (!match.isVerified) {
         int score1 = random.nextInt(5);
         int score2 = random.nextInt(5);
-        
+
         // Ensure no draws for testing knockout progression
         while (score1 == score2) {
           score2 = random.nextInt(5);
         }
-        
+
         final updatedMatch = match.copyWith(
           player1Score: score1,
           player2Score: score2,
@@ -762,7 +833,7 @@ class _MatchesTabState extends State<MatchesTab> with AutomaticKeepAliveClientMi
         count++;
       }
     }
-    
+
     if (messenger.mounted) {
       messenger.showSnackBar(
         SnackBar(

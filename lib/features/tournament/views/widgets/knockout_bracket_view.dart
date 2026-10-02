@@ -553,10 +553,11 @@ class _BracketMatchCard extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.05),
                   ),
                   child: ClipOval(
-                    child: player?.profileImageUrl != null
+                    child: (player?.profileImageUrl != null && player!.profileImageUrl!.trim().isNotEmpty)
                         ? WebSafeImage(
                             imageUrl: player!.profileImageUrl!,
                             fit: BoxFit.cover,
+                            fallbackWidget: const Icon(Icons.person, size: 10, color: AppTheme.textGrey),
                           )
                         : const Icon(Icons.person, size: 10, color: AppTheme.textGrey),
                   ),

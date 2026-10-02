@@ -59,14 +59,20 @@ class EFBDLandingPage extends StatelessWidget {
               onPressed: () => _showProfileDialog(context, player: authProvider.playerProfile),
               icon: CircleAvatar(
                 radius: 12,
-                backgroundImage: !kIsWeb && authProvider.playerProfile?.profileImageUrl != null && authProvider.playerProfile!.profileImageUrl!.isNotEmpty
+                backgroundImage: !kIsWeb && authProvider.playerProfile?.profileImageUrl != null && authProvider.playerProfile!.profileImageUrl!.trim().isNotEmpty
                     ? NetworkImage(authProvider.playerProfile!.profileImageUrl!)
                     : null,
                 child: ClipOval(
-                  child: authProvider.playerProfile?.profileImageUrl == null || authProvider.playerProfile!.profileImageUrl!.isEmpty
+                  child: authProvider.playerProfile?.profileImageUrl == null || authProvider.playerProfile!.profileImageUrl!.trim().isEmpty
                       ? const Icon(Icons.person, size: 12)
                       : (kIsWeb 
-                          ? WebSafeImage(imageUrl: authProvider.playerProfile!.profileImageUrl!, width: 24, height: 24, fit: BoxFit.cover)
+                          ? WebSafeImage(
+                              imageUrl: authProvider.playerProfile!.profileImageUrl!,
+                              width: 24,
+                              height: 24,
+                              fit: BoxFit.cover,
+                              fallbackWidget: const Icon(Icons.person, size: 12),
+                            )
                           : null),
                 ),
               ),

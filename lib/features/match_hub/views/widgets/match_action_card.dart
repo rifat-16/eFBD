@@ -152,12 +152,17 @@ class MatchActionCard extends StatelessWidget {
                 radius: isMobile ? 24 : 28,
                 backgroundColor: AppTheme.darkBackground,
                 child: ClipOval(
-                  child: (imageUrl != null && imageUrl.isNotEmpty)
+                  child: (imageUrl != null && imageUrl.trim().isNotEmpty)
                       ? WebSafeImage(
                           imageUrl: imageUrl,
                           fit: BoxFit.cover,
                           width: isMobile ? 48 : 56,
                           height: isMobile ? 48 : 56,
+                          fallbackWidget: Icon(
+                            Icons.person,
+                            color: AppTheme.primaryGold,
+                            size: isMobile ? 28 : 32,
+                          ),
                         )
                       : Icon(
                           Icons.person,

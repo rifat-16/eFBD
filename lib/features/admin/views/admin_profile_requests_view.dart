@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/services/database_service.dart';
 import '../../../core/theme/app_theme.dart';
@@ -293,13 +294,13 @@ class _RequestCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildComparisonRow('Real Name', current['realName'], requested['realName']),
+                    _buildComparisonRow(context, 'Real Name', current['realName'], requested['realName']),
                     const SizedBox(height: 12),
-                    _buildComparisonRow('In-Game Name', current['ign'], requested['ign']),
+                    _buildComparisonRow(context, 'In-Game Name', current['ign'], requested['ign']),
                     const SizedBox(height: 12),
-                    _buildComparisonRow('eFootball UID', current['eFootballUid'], requested['eFootballUid']),
+                    _buildComparisonRow(context, 'eFootball UID', current['eFootballUid'], requested['eFootballUid']),
                     const SizedBox(height: 12),
-                    _buildComparisonRow('WhatsApp', current['whatsapp'], requested['whatsapp']),
+                    _buildComparisonRow(context, 'WhatsApp', current['whatsapp'], requested['whatsapp']),
                   ],
                 ),
               ),
@@ -340,19 +341,42 @@ class _RequestCard extends StatelessWidget {
     );
   }
 
-  Widget _buildComparisonRow(String label, dynamic oldVal, dynamic newVal) {
+  Widget _buildComparisonRow(BuildContext context, String label, dynamic oldVal, dynamic newVal) {
     final bool isChanged = oldVal != newVal;
+    final bool isWhatsapp = label.toLowerCase().contains('whatsapp');
+    final String textToCopy = (newVal ?? oldVal)?.toString() ?? '';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label.toUpperCase(),
-          style: GoogleFonts.rajdhani(
-            fontSize: 13,
-            color: AppTheme.textGrey,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-          ),
+        Row(
+          children: [
+            Text(
+              label.toUpperCase(),
+              style: GoogleFonts.rajdhani(
+                fontSize: 13,
+                color: AppTheme.textGrey,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+            if (isWhatsapp && textToCopy.isNotEmpty && textToCopy != 'N/A') ...[
+              const SizedBox(width: 6),
+              InkWell(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: textToCopy));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('WhatsApp number copied: $textToCopy'),
+                      duration: const Duration(seconds: 2),
+                      backgroundColor: AppTheme.accentGreen,
+                    ),
+                  );
+                },
+                child: const Icon(Icons.copy_rounded, size: 14, color: AppTheme.primaryGold),
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: 4),
         Row(

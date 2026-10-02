@@ -287,12 +287,17 @@ class _PodiumSpot extends StatelessWidget {
                   radius: innerRadius,
                   backgroundColor: AppTheme.darkBackground,
                   child: ClipOval(
-                    child: (player.profileImageUrl != null && player.profileImageUrl!.isNotEmpty)
+                    child: (player.profileImageUrl != null && player.profileImageUrl!.trim().isNotEmpty)
                         ? WebSafeImage(
                             imageUrl: player.profileImageUrl!,
                             fit: BoxFit.cover,
                             width: innerRadius * 2,
                             height: innerRadius * 2,
+                            fallbackWidget: Icon(
+                              Icons.person,
+                              color: color,
+                              size: innerRadius * 1.2,
+                            ),
                           )
                         : Icon(
                             Icons.person,
@@ -470,10 +475,15 @@ class _PlayerRow extends StatelessWidget {
                       border: rank <= 3 ? Border.all(color: rankColor.withValues(alpha: 0.5), width: 1) : null,
                     ),
                     child: ClipOval(
-                      child: (player.profileImageUrl != null && player.profileImageUrl!.isNotEmpty)
+                      child: (player.profileImageUrl != null && player.profileImageUrl!.trim().isNotEmpty)
                           ? WebSafeImage(
                               imageUrl: player.profileImageUrl!,
                               fit: BoxFit.cover,
+                              fallbackWidget: Icon(
+                                Icons.person,
+                                size: 16,
+                                color: rankColor,
+                              ),
                             )
                           : Icon(
                               Icons.person,

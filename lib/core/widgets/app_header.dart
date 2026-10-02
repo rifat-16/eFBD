@@ -124,19 +124,29 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                                 ? Colors.redAccent.withValues(alpha: 0.2)
                                 : AppTheme.primaryGold,
                             backgroundImage: (!kIsWeb && authProvider.playerProfile?.profileImageUrl != null &&
-                                    authProvider.playerProfile!.profileImageUrl!.isNotEmpty)
+                                    authProvider.playerProfile!.profileImageUrl!.trim().isNotEmpty)
                                 ? NetworkImage(authProvider.playerProfile!.profileImageUrl!)
                                 : null,
                             child: ClipOval(
                               child: (authProvider.playerProfile?.profileImageUrl == null ||
-                                      authProvider.playerProfile!.profileImageUrl!.isEmpty)
+                                      authProvider.playerProfile!.profileImageUrl!.trim().isEmpty)
                                   ? Icon(
                                       authProvider.playerProfile == null ? Icons.warning : Icons.person,
                                       color: authProvider.playerProfile == null ? Colors.redAccent : Colors.black,
                                       size: 16,
                                     )
                                   : (kIsWeb 
-                                      ? WebSafeImage(imageUrl: authProvider.playerProfile!.profileImageUrl!, width: 32, height: 32, fit: BoxFit.cover)
+                                      ? WebSafeImage(
+                                          imageUrl: authProvider.playerProfile!.profileImageUrl!,
+                                          width: 32,
+                                          height: 32,
+                                          fit: BoxFit.cover,
+                                          fallbackWidget: Icon(
+                                            authProvider.playerProfile == null ? Icons.warning : Icons.person,
+                                            color: authProvider.playerProfile == null ? Colors.redAccent : Colors.black,
+                                            size: 16,
+                                          ),
+                                        )
                                       : null),
                             ),
                           ),
