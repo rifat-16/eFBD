@@ -61,33 +61,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
             Text(tournament.description, style: GoogleFonts.poppins(color: Colors.white70, height: 1.6, fontSize: 14)),
             const SizedBox(height: 32),
           ],
-          if (tournament.prizes.isNotEmpty) ...[
-            Text('PRIZE POOL', style: GoogleFonts.rajdhani(color: AppTheme.primaryGold, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppTheme.cardBackground,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.1)),
-              ),
-              child: Column(
-                children: tournament.prizes.entries.map((entry) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(entry.key, style: GoogleFonts.poppins(color: Colors.white70, fontWeight: FontWeight.w500, fontSize: 14)),
-                        Text(entry.value, style: GoogleFonts.rajdhani(color: AppTheme.primaryGold, fontWeight: FontWeight.bold, fontSize: 16)),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-            const SizedBox(height: 32),
-          ],
+          if (tournament.prizes.isNotEmpty) _buildPrizePoolSection(tournament.prizes),
           if (tournament.rules.isNotEmpty) ...[
             Text('TOURNAMENT RULES', style: GoogleFonts.rajdhani(color: AppTheme.primaryGold, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
             const SizedBox(height: 12),
@@ -111,6 +85,180 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildPrizePoolSection(Map<String, String> prizes) {
+    final sortedEntries = _getSortedPrizeEntries(prizes);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'PRIZE POOL',
+              style: GoogleFonts.rajdhani(
+                color: AppTheme.primaryGold,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryGold.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.emoji_events_outlined, size: 14, color: AppTheme.primaryGold),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${prizes.length} TIERS',
+                    style: GoogleFonts.rajdhani(
+                      color: AppTheme.primaryGold,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: AppTheme.cardBackground,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.15)),
+          ),
+          child: ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: sortedEntries.length,
+            separatorBuilder: (context, index) => Divider(
+              height: 1,
+              color: Colors.white.withValues(alpha: 0.05),
+              indent: 16,
+              endIndent: 16,
+            ),
+            itemBuilder: (context, index) {
+              final entry = sortedEntries[index];
+              final label = entry.key;
+              final amount = entry.value;
+
+              final labelLower = label.toLowerCase().trim();
+              IconData icon = Icons.emoji_events;
+              Color iconColor = AppTheme.primaryGold;
+              Color badgeBg = AppTheme.primaryGold.withValues(alpha: 0.1);
+
+              if (labelLower.contains('1st') || labelLower.contains('first') || labelLower.contains('champion') || labelLower.contains('winner')) {
+                icon = Icons.emoji_events;
+                iconColor = const Color(0xFFFFD700);
+                badgeBg = const Color(0xFFFFD700).withValues(alpha: 0.15);
+              } else if (labelLower.contains('2nd') || labelLower.contains('second') || labelLower.contains('runner')) {
+                icon = Icons.workspace_premium;
+                iconColor = const Color(0xFFC0C0C0);
+                badgeBg = const Color(0xFFC0C0C0).withValues(alpha: 0.15);
+              } else if (labelLower.contains('3rd') || labelLower.contains('third')) {
+                icon = Icons.military_tech;
+                iconColor = const Color(0xFFCD7F32);
+                badgeBg = const Color(0xFFCD7F32).withValues(alpha: 0.15);
+              } else {
+                icon = Icons.stars_rounded;
+                iconColor = AppTheme.primaryGold.withValues(alpha: 0.8);
+                badgeBg = AppTheme.primaryGold.withValues(alpha: 0.08);
+              }
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: badgeBg,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(icon, color: iconColor, size: 20),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        label.toUpperCase(),
+                        style: GoogleFonts.rajdhani(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppTheme.darkBackground,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: iconColor.withValues(alpha: 0.3)),
+                      ),
+                      child: Text(
+                        amount,
+                        style: GoogleFonts.rajdhani(
+                          color: iconColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 32),
+      ],
+    );
+  }
+
+  List<MapEntry<String, String>> _getSortedPrizeEntries(Map<String, String> prizes) {
+    final entries = prizes.entries.toList();
+
+    int getPriority(String label) {
+      final l = label.toLowerCase().trim();
+      if (l.contains('1st') || l.contains('first') || l.contains('champion') || l.contains('winner')) {
+        return 1;
+      } else if (l.contains('2nd') || l.contains('second') || l.contains('runner')) {
+        return 2;
+      } else if (l.contains('3rd') || l.contains('third')) {
+        return 3;
+      } else if (l.contains('4th') || l.contains('fourth')) {
+        return 4;
+      } else if (l.contains('5th') || l.contains('fifth')) {
+        return 5;
+      }
+      final match = RegExp(r'\d+').firstMatch(l);
+      if (match != null) {
+        return int.tryParse(match.group(0)!) ?? 99;
+      }
+      return 100;
+    }
+
+    entries.sort((a, b) {
+      final pA = getPriority(a.key);
+      final pB = getPriority(b.key);
+      if (pA != pB) return pA.compareTo(pB);
+      return a.key.compareTo(b.key);
+    });
+
+    return entries;
   }
 
   Widget _buildMyMatchSection(Tournament tournament) {

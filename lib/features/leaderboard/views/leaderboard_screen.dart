@@ -287,20 +287,17 @@ class _PodiumSpot extends StatelessWidget {
                   radius: innerRadius,
                   backgroundColor: AppTheme.darkBackground,
                   child: ClipOval(
-                    child: player.profileImageUrl != null
+                    child: (player.profileImageUrl != null && player.profileImageUrl!.isNotEmpty)
                         ? WebSafeImage(
                             imageUrl: player.profileImageUrl!,
                             fit: BoxFit.cover,
                             width: innerRadius * 2,
                             height: innerRadius * 2,
                           )
-                        : Text(
-                            player.ign.isNotEmpty ? player.ign[0].toUpperCase() : '?',
-                            style: GoogleFonts.rajdhani(
-                              color: color,
-                              fontWeight: FontWeight.bold,
-                              fontSize: avatarRadius * 0.5,
-                            ),
+                        : Icon(
+                            Icons.person,
+                            color: color,
+                            size: innerRadius * 1.2,
                           ),
                   ),
                 ),
@@ -473,16 +470,15 @@ class _PlayerRow extends StatelessWidget {
                       border: rank <= 3 ? Border.all(color: rankColor.withValues(alpha: 0.5), width: 1) : null,
                     ),
                     child: ClipOval(
-                      child: player.profileImageUrl != null
+                      child: (player.profileImageUrl != null && player.profileImageUrl!.isNotEmpty)
                           ? WebSafeImage(
                               imageUrl: player.profileImageUrl!,
                               fit: BoxFit.cover,
                             )
-                          : Center(
-                              child: Text(
-                                player.ign.isNotEmpty ? player.ign[0].toUpperCase() : '?',
-                                style: TextStyle(color: rankColor, fontWeight: FontWeight.bold, fontSize: AppTheme.responsiveFontSize(context, 12)),
-                              ),
+                          : Icon(
+                              Icons.person,
+                              size: 16,
+                              color: rankColor,
                             ),
                     ),
                   ),

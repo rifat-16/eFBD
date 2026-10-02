@@ -152,20 +152,17 @@ class MatchActionCard extends StatelessWidget {
                 radius: isMobile ? 24 : 28,
                 backgroundColor: AppTheme.darkBackground,
                 child: ClipOval(
-                  child: imageUrl != null
+                  child: (imageUrl != null && imageUrl.isNotEmpty)
                       ? WebSafeImage(
                           imageUrl: imageUrl,
                           fit: BoxFit.cover,
                           width: isMobile ? 48 : 56,
                           height: isMobile ? 48 : 56,
                         )
-                      : Text(
-                          name.isNotEmpty ? name[0].toUpperCase() : '?',
-                          style: GoogleFonts.rajdhani(
-                            color: AppTheme.primaryGold,
-                            fontWeight: FontWeight.bold,
-                            fontSize: isMobile ? 18 : 22,
-                          ),
+                      : Icon(
+                          Icons.person,
+                          color: AppTheme.primaryGold,
+                          size: isMobile ? 28 : 32,
                         ),
                 ),
               ),

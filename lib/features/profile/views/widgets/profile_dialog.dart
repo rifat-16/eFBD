@@ -730,7 +730,7 @@ class _ProfileDialogState extends State<ProfileDialog> {
                                   : null),
                           child: ClipOval(
                             child: _imageBytes == null && (_currentPhotoUrl == null || _currentPhotoUrl!.isEmpty)
-                              ? const Icon(Icons.person, size: 60, color: Colors.white10)
+                              ? const Icon(Icons.person, size: 60, color: AppTheme.primaryGold)
                               : (kIsWeb && _imageBytes == null && _currentPhotoUrl != null && _currentPhotoUrl!.isNotEmpty
                                   ? WebSafeImage(imageUrl: _currentPhotoUrl!, width: 120, height: 120, fit: BoxFit.cover)
                                   : null),
