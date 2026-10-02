@@ -2,9 +2,11 @@
 
 A comprehensive tournament and player management system for the eFootball community in Bangladesh.
 
+🌐 **Live Website:** [https://efootballersbd.web.app](https://efootballersbd.web.app)
+
 ## Core Features
 
-### 1. Profile & Identity Management (New)
+### 1. Profile & Identity Management
 - **Strict Input Validation:** All authentication and registration fields now include real-time `trim()` checks, preventing bypass via empty spaces.
 - **Force Profile Completion Guard:** Intercepts users with missing profile data (Legacy or Social login) at the routing level, mandating completion of IGN, UID, and WhatsApp before granting access to any app features.
 - **Password Recovery:** Integrated Firebase-backed password reset system allowing users to recover accounts via secure email links.
@@ -13,7 +15,9 @@ A comprehensive tournament and player management system for the eFootball commun
 - **Pending State Protection:** Users are prevented from submitting multiple overlapping update requests.
 - **Resilient Error Handling:** Technical Firebase "Internal Assertion" errors are intercepted and presented as user-friendly advice (e.g., "Database synchronization error. Please refresh.").
 
-### 2. Community & Social Integration (New)
+### 2. Admin Tools & Utilities
+- **WhatsApp Copy Utilities:** One-click copy icons for individual player WhatsApp numbers across Registration lists, Admin Dashboard player tables, and Profile Requests, along with bulk copy functionality.
+- **Streamlined Production Dashboard:** Cleaned up test/seed controls (`Seed 64 Players`, `Demo Tournament`, `Quick Verify`) for a focused, production-ready admin workflow.
 - **Centralized Social Links:** Admins can manage global community links (Facebook Group, Facebook Page, WhatsApp Community) from the Admin Dashboard.
 - **Dynamic App Drawer:** Social buttons automatically appear in the side navigation based on active admin configuration.
 - **Tournament WhatsApp Groups:** Each tournament can have a unique WhatsApp group link, visible only to verified participants to ensure a secure and focused environment.
@@ -35,8 +39,9 @@ A comprehensive tournament and player management system for the eFootball commun
 
 ## Technical Highlights
 
-### 1. Web-Safe Architecture
+### 1. Web-Safe Architecture & Resilient Image Fallbacks
 - **CORS Bypass:** Custom `HtmlElementView` implementation for Flutter Web to ensure profile pictures and match proof screenshots load regardless of strict browser policies.
+- **Automatic Avatar Fallbacks:** `WebSafeImage` detects missing, empty, or broken image URLs across Web and Mobile, automatically falling back to clean Person Avatar icons without displaying broken browser image indicators.
 - **Responsive Design:** Fully adaptive UI using `Rajdhani` for headers and `Poppins` for body text, optimized for both Mobile and Web views.
 
 ### 2. Firestore Optimization
@@ -46,12 +51,13 @@ A comprehensive tournament and player management system for the eFootball commun
 
 ## Troubleshooting (Flutter Web)
 
-### Screenshot Loading (CORS)
-We have implemented a **Web-Safe Image Loading** system that automatically bypasses most browser CORS restrictions.
+### Screenshot & Image Loading (CORS & Fallbacks)
+We have implemented a **Web-Safe Image Loading** system that automatically bypasses most browser CORS restrictions and handles missing or broken images gracefully.
 
-1. **Direct View:** Screenshots load automatically inside the app.
+1. **Direct View:** Screenshots and profile pictures load automatically inside the app.
 2. **Interactive View:** Tap any screenshot to view full-screen with zoom.
-3. **Fallback:** "Open in New Tab" provided for extremely strict browser environments.
+3. **Graceful Fallbacks:** If a profile picture URL is missing or fails to load, a clean Person Avatar icon is rendered automatically instead of a broken browser image tag.
+4. **Fallback Links:** "Open in New Tab" provided for extremely strict browser environments.
 
 ## Getting Started
 
