@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/database_service.dart';
+import '../../../core/utils/whatsapp_helper.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
@@ -37,7 +38,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       final updatedPlayer = authProvider.playerProfile!.copyWith(
         ign: _ignController.text.trim(),
         uid: _uidController.text.trim(),
-        whatsapp: _whatsappController.text.trim(),
+        whatsapp: WhatsappHelper.formatNumber(_whatsappController.text),
       );
 
       await DatabaseService().updatePlayer(updatedPlayer);

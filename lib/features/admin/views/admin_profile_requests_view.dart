@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/services/database_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/whatsapp_helper.dart';
 import 'package:intl/intl.dart';
 
 class AdminProfileRequestsView extends StatefulWidget {
@@ -344,7 +345,8 @@ class _RequestCard extends StatelessWidget {
   Widget _buildComparisonRow(BuildContext context, String label, dynamic oldVal, dynamic newVal) {
     final bool isChanged = oldVal != newVal;
     final bool isWhatsapp = label.toLowerCase().contains('whatsapp');
-    final String textToCopy = (newVal ?? oldVal)?.toString() ?? '';
+    final String rawVal = (newVal ?? oldVal)?.toString() ?? '';
+    final String formattedVal = isWhatsapp ? WhatsappHelper.formatNumber(rawVal) : rawVal;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,14 +362,14 @@ class _RequestCard extends StatelessWidget {
                 letterSpacing: 1.2,
               ),
             ),
-            if (isWhatsapp && textToCopy.isNotEmpty && textToCopy != 'N/A') ...[
+            if (isWhatsapp && formattedVal.isNotEmpty && formattedVal != 'N/A') ...[
               const SizedBox(width: 6),
               InkWell(
                 onTap: () {
-                  Clipboard.setData(ClipboardData(text: textToCopy));
+                  Clipboard.setData(ClipboardData(text: formattedVal));
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('WhatsApp number copied: $textToCopy'),
+                      content: Text('WhatsApp number copied: $formattedVal'),
                       duration: const Duration(seconds: 2),
                       backgroundColor: AppTheme.accentGreen,
                     ),

@@ -12,6 +12,7 @@ import '../../../core/providers/auth_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import 'widgets/tournament_create_form.dart';
 import '../../../core/utils/responsive_helper.dart';
+import '../../../core/utils/whatsapp_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -629,10 +630,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             InkWell(
                               onTap: () {
                                 if (p.whatsapp != null && p.whatsapp!.isNotEmpty) {
-                                  Clipboard.setData(ClipboardData(text: p.whatsapp!));
+                                  final formatted = WhatsappHelper.formatNumber(p.whatsapp!);
+                                  Clipboard.setData(ClipboardData(text: formatted));
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text('WhatsApp number copied: ${p.whatsapp}'),
+                                      content: Text('WhatsApp number copied: $formatted'),
                                       duration: const Duration(seconds: 2),
                                       backgroundColor: AppTheme.accentGreen,
                                     ),
@@ -642,7 +644,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(p.whatsapp ?? '-', style: GoogleFonts.poppins(fontSize: 13)),
+                                  Text(
+                                    p.whatsapp != null && p.whatsapp!.isNotEmpty
+                                        ? WhatsappHelper.formatNumber(p.whatsapp!)
+                                        : '-',
+                                    style: GoogleFonts.poppins(fontSize: 13),
+                                  ),
                                   if (p.whatsapp != null && p.whatsapp!.isNotEmpty) ...[
                                     const SizedBox(width: 4),
                                     const Icon(Icons.copy_rounded, size: 14, color: AppTheme.primaryGold),

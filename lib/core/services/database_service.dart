@@ -269,32 +269,39 @@ class DatabaseService {
     });
   }
 
-  Stream<TournamentMatch?> getMyMatchByTournament(String tournamentId, String playerId) {
-    // Check as player 1
-    final p1Stream = _db
+  Stream<List<TournamentMatch>> getMyMatchesByTournament(String tournamentId, String playerId) {
+    final p1Null = Stream<QuerySnapshot<Map<String, dynamic>>?>.value(null);
+    final p1Real = _db
         .collection('matches')
         .where('tournamentId', isEqualTo: tournamentId)
         .where('player1Id', isEqualTo: playerId)
         .where('isCompleted', isEqualTo: false)
-        .snapshots();
-    
-    // Check as player 2
-    final p2Stream = _db
+        .snapshots()
+        .map((s) => s as QuerySnapshot<Map<String, dynamic>>?);
+
+    final p2Null = Stream<QuerySnapshot<Map<String, dynamic>>?>.value(null);
+    final p2Real = _db
         .collection('matches')
         .where('tournamentId', isEqualTo: tournamentId)
         .where('player2Id', isEqualTo: playerId)
         .where('isCompleted', isEqualTo: false)
-        .snapshots();
+        .snapshots()
+        .map((s) => s as QuerySnapshot<Map<String, dynamic>>?);
 
-    return Rx.combineLatest2<QuerySnapshot, QuerySnapshot, TournamentMatch?>(
+    final p1Stream = Rx.concat<QuerySnapshot<Map<String, dynamic>>?>([p1Null, p1Real]);
+    final p2Stream = Rx.concat<QuerySnapshot<Map<String, dynamic>>?>([p2Null, p2Real]);
+
+    return Rx.combineLatest2<QuerySnapshot<Map<String, dynamic>>?, QuerySnapshot<Map<String, dynamic>>?, List<TournamentMatch>>(
       p1Stream,
       p2Stream,
       (s1, s2) {
-        if (s1.docs.isNotEmpty) return TournamentMatch.fromFirestore(s1.docs.first);
-        if (s2.docs.isNotEmpty) return TournamentMatch.fromFirestore(s2.docs.first);
-        return null;
+        final list1 = s1?.docs.map((doc) => TournamentMatch.fromFirestore(doc)).toList() ?? [];
+        final list2 = s2?.docs.map((doc) => TournamentMatch.fromFirestore(doc)).toList() ?? [];
+        final combined = [...list1, ...list2];
+        combined.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+        return combined;
       },
-    );
+    ).asBroadcastStream();
   }
 
   Future<void> createMatch(TournamentMatch match) {
@@ -307,7 +314,7 @@ class DatabaseService {
         .where('player1Id', isEqualTo: playerId)
         .where('isCompleted', isEqualTo: false)
         .get();
-    
+
     final p2Query = await _db
         .collection('matches')
         .where('player2Id', isEqualTo: playerId)
@@ -320,28 +327,36 @@ class DatabaseService {
   }
 
   Stream<List<TournamentMatch>> getMyMatches(String playerId) {
-    // Combine matches where player is either player 1 or player 2
-    final p1Stream = _db
+    final p1Null = Stream<QuerySnapshot<Map<String, dynamic>>?>.value(null);
+    final p1Real = _db
         .collection('matches')
         .where('player1Id', isEqualTo: playerId)
         .where('isCompleted', isEqualTo: false)
-        .snapshots();
-    
-    final p2Stream = _db
+        .snapshots()
+        .map((s) => s as QuerySnapshot<Map<String, dynamic>>?);
+
+    final p2Null = Stream<QuerySnapshot<Map<String, dynamic>>?>.value(null);
+    final p2Real = _db
         .collection('matches')
         .where('player2Id', isEqualTo: playerId)
         .where('isCompleted', isEqualTo: false)
-        .snapshots();
+        .snapshots()
+        .map((s) => s as QuerySnapshot<Map<String, dynamic>>?);
 
-    return Rx.combineLatest2<QuerySnapshot, QuerySnapshot, List<TournamentMatch>>(
+    final p1Stream = Rx.concat<QuerySnapshot<Map<String, dynamic>>?>([p1Null, p1Real]);
+    final p2Stream = Rx.concat<QuerySnapshot<Map<String, dynamic>>?>([p2Null, p2Real]);
+
+    return Rx.combineLatest2<QuerySnapshot<Map<String, dynamic>>?, QuerySnapshot<Map<String, dynamic>>?, List<TournamentMatch>>(
       p1Stream,
       p2Stream,
       (s1, s2) {
-        final list1 = s1.docs.map((doc) => TournamentMatch.fromFirestore(doc)).toList();
-        final list2 = s2.docs.map((doc) => TournamentMatch.fromFirestore(doc)).toList();
-        return [...list1, ...list2]..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+        final list1 = s1?.docs.map((doc) => TournamentMatch.fromFirestore(doc)).toList() ?? [];
+        final list2 = s2?.docs.map((doc) => TournamentMatch.fromFirestore(doc)).toList() ?? [];
+        final combined = [...list1, ...list2];
+        combined.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+        return combined;
       },
-    );
+    ).asBroadcastStream();
   }
 
   Future<List<TournamentMatch>> getMyMatchHistoryOnce(String playerId, {int limit = 20, DocumentSnapshot? startAfter}) async {
@@ -882,10 +897,58 @@ class DatabaseService {
     await batch.commit();
   }
 
-  Future<void> updateRegistrationStatus(String registrationId, RegistrationStatus status) {
-    return _db.collection('registrations').doc(registrationId).update({
-      'status': status.name,
-    });
+  Future<void> updateRegistrationStatus(String registrationId, RegistrationStatus status) async {
+    final regDoc = await _db.collection('registrations').doc(registrationId).get();
+    if (regDoc.exists) {
+      final regData = regDoc.data();
+      final pId = regData?['playerId']?.toString();
+      final tId = regData?['tournamentId']?.toString();
+
+      final batch = _db.batch();
+      batch.update(regDoc.reference, {'status': status.name});
+
+      if (pId != null && tId != null) {
+        final tRef = _db.collection('tournaments').doc(tId);
+        if (status == RegistrationStatus.verified) {
+          batch.update(tRef, {
+            'registeredPlayers': FieldValue.arrayUnion([pId]),
+          });
+        } else {
+          batch.update(tRef, {
+            'registeredPlayers': FieldValue.arrayRemove([pId]),
+          });
+        }
+      }
+      await batch.commit();
+    } else {
+      await _db.collection('registrations').doc(registrationId).update({
+        'status': status.name,
+      });
+    }
+  }
+
+  int _compareGroupNames(String aName, String bName) {
+    final aClean = aName.replaceAll(RegExp(r'^Group\s+', caseSensitive: false), '').trim();
+    final bClean = bName.replaceAll(RegExp(r'^Group\s+', caseSensitive: false), '').trim();
+
+    final aNum = int.tryParse(aClean);
+    final bNum = int.tryParse(bClean);
+
+    if (aNum != null && bNum != null) {
+      return aNum.compareTo(bNum);
+    }
+
+    final isAAlpha = RegExp(r'^[A-Za-z]+$').hasMatch(aClean);
+    final isBAlpha = RegExp(r'^[A-Za-z]+$').hasMatch(bClean);
+
+    if (isAAlpha && isBAlpha) {
+      if (aClean.length != bClean.length) {
+        return aClean.length.compareTo(bClean.length);
+      }
+      return aClean.toUpperCase().compareTo(bClean.toUpperCase());
+    }
+
+    return aName.compareTo(bName);
   }
 
   Future<List<TournamentGroup>> getTournamentGroupsOnce(String tournamentId) async {
@@ -893,7 +956,9 @@ class DatabaseService {
         .collection('groups')
         .where('tournamentId', isEqualTo: tournamentId)
         .get();
-    return snapshot.docs.map((doc) => TournamentGroup.fromFirestore(doc)).toList();
+    final groups = snapshot.docs.map((doc) => TournamentGroup.fromFirestore(doc)).toList();
+    groups.sort((a, b) => _compareGroupNames(a.name, b.name));
+    return groups;
   }
 
   Stream<List<TournamentGroup>> getTournamentGroups(String tournamentId) {
@@ -901,8 +966,11 @@ class DatabaseService {
         .collection('groups')
         .where('tournamentId', isEqualTo: tournamentId)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => TournamentGroup.fromFirestore(doc)).toList());
+        .map((snapshot) {
+          final groups = snapshot.docs.map((doc) => TournamentGroup.fromFirestore(doc)).toList();
+          groups.sort((a, b) => _compareGroupNames(a.name, b.name));
+          return groups;
+        });
   }
 
   Future<void> generateGroups(String tournamentId, int playersPerGroup, {List<String>? customPlayerIds, DateTime? deadline}) async {
@@ -910,9 +978,31 @@ class DatabaseService {
     if (!tournamentDoc.exists) throw Exception("Tournament not found");
 
     final tournament = Tournament.fromFirestore(tournamentDoc);
-    final playerIds = (customPlayerIds ?? List<String>.from(tournament.registeredPlayers)).toSet().toList();
+
+    List<String> playerIds;
+    if (customPlayerIds != null && customPlayerIds.isNotEmpty) {
+      playerIds = customPlayerIds.toSet().toList();
+    } else {
+      // Query VERIFIED registrations for this tournament
+      final verifiedRegs = await _db
+          .collection('registrations')
+          .where('tournamentId', isEqualTo: tournamentId)
+          .where('status', isEqualTo: RegistrationStatus.verified.name)
+          .get();
+
+      if (verifiedRegs.docs.isNotEmpty) {
+        playerIds = verifiedRegs.docs
+            .map((doc) => doc.data()['playerId']?.toString())
+            .whereType<String>()
+            .where((id) => id.isNotEmpty)
+            .toSet()
+            .toList();
+      } else {
+        playerIds = List<String>.from(tournament.registeredPlayers).toSet().toList();
+      }
+    }
     
-    if (playerIds.length < 2) throw Exception("At least 2 players are required to generate groups.");
+    if (playerIds.length < 2) throw Exception("At least 2 verified players are required to generate groups.");
     
     playerIds.shuffle();
 
@@ -1086,7 +1176,24 @@ class DatabaseService {
     if (!tournamentDoc.exists) throw Exception("Tournament not found");
 
     final tournament = Tournament.fromFirestore(tournamentDoc);
-    final playerIds = List<String>.from(tournament.registeredPlayers).toSet().toList();
+
+    final verifiedRegs = await _db
+        .collection('registrations')
+        .where('tournamentId', isEqualTo: tournamentId)
+        .where('status', isEqualTo: RegistrationStatus.verified.name)
+        .get();
+
+    List<String> playerIds;
+    if (verifiedRegs.docs.isNotEmpty) {
+      playerIds = verifiedRegs.docs
+          .map((doc) => doc.data()['playerId']?.toString())
+          .whereType<String>()
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .toList();
+    } else {
+      playerIds = List<String>.from(tournament.registeredPlayers).toSet().toList();
+    }
     
     if (playerIds.length < 2) throw Exception("At least 2 verified players are required.");
 

@@ -11,6 +11,7 @@ import 'dart:typed_data';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/utils/responsive_helper.dart';
+import '../../../../core/utils/whatsapp_helper.dart';
 import '../../../../core/widgets/full_screen_image_viewer.dart';
 import '../../../../core/widgets/web_safe_image.dart';
 
@@ -258,22 +259,47 @@ class MatchActionCard extends StatelessWidget {
 
   void _launchWhatsApp(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
-    // Fetch both players to get the WhatsApp number of the opponent
-    // For now, this is a bit complex without knowing which player the current user is.
-    // Assuming we want to contact the admin or the opponent.
-    
-    // Attempt to get player data from Database
-    final playersStream = DatabaseService().getPlayersStream();
-    final players = await playersStream.first;
-    final p1 = players.firstWhere((p) => p.id == match.player1Id, orElse: () => Player(id: '', name: 'Unknown', email: '', ign: '', uid: ''));
-    final p2 = players.firstWhere((p) => p.id == match.player2Id, orElse: () => Player(id: '', name: 'Unknown', email: '', ign: '', uid: ''));
-    
-    // In a real scenario, we'd identify 'self' and pick the other one.
-    // For this preview, let's just pick p2's WhatsApp if available, else p1's, else default.
-    final contactNumber = p2.whatsapp ?? p1.whatsapp ?? "8801700000000";
-    
-    final url = "https://wa.me/$contactNumber?text=${Uri.encodeComponent('Hi, I am your opponent for the eFootballers Bangladesh tournament match: ${match.player1Ign} vs ${match.player2Ign}.')}";
-    
+    final authProvider = context.read<AuthProvider>();
+    final currentUserId = authProvider.playerProfile?.id ?? authProvider.user?.uid;
+
+    // Determine opponent ID
+    String opponentId;
+    if (currentUserId == match.player1Id) {
+      opponentId = match.player2Id;
+    } else if (currentUserId == match.player2Id) {
+      opponentId = match.player1Id;
+    } else {
+      opponentId = match.player2Id.isNotEmpty ? match.player2Id : match.player1Id;
+    }
+
+    final opponent = await DatabaseService().getPlayer(opponentId);
+    final rawContact = opponent?.whatsapp?.trim() ?? '';
+
+    if (rawContact.isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Opponent has not provided a WhatsApp number.'),
+          backgroundColor: Colors.orangeAccent,
+        ),
+      );
+      return;
+    }
+
+    final contactDigits = WhatsappHelper.digitsForUrl(rawContact);
+    if (contactDigits.isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Invalid WhatsApp number for opponent.'),
+          backgroundColor: Colors.orangeAccent,
+        ),
+      );
+      return;
+    }
+
+    final myIgn = authProvider.playerProfile?.ign ?? 'Opponent';
+    final message = 'Hi, I am $myIgn from eFootballers Bangladesh. We have a match in the tournament: ${match.player1Ign} vs ${match.player2Ign}.';
+    final url = "https://wa.me/$contactDigits?text=${Uri.encodeComponent(message)}";
+
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url));
     } else {

@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/tournament_provider.dart';
 import '../../../core/utils/responsive_helper.dart';
+import '../../../core/utils/whatsapp_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -333,7 +334,7 @@ class _TournamentRegistrationDialogState extends State<TournamentRegistrationDia
           playerName: _nameController.text,
           playerIgn: _ignController.text,
           playerUid: _uidController.text,
-          playerWhatsapp: _whatsappController.text,
+          playerWhatsapp: WhatsappHelper.formatNumber(_whatsappController.text),
           playerEmail: authProvider.playerProfile?.email ?? (authProvider.user?.email ?? 'N/A'),
           playerProfileImageUrl: authProvider.playerProfile?.profileImageUrl,
           trxId: widget.tournament.isFree ? 'FREE' : _trxIdController.text,

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/services/database_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/whatsapp_helper.dart';
 import '../../tournament/models/tournament_model.dart';
 import '../../tournament/models/registration_model.dart';
 import '../../tournament/models/group_model.dart';
@@ -249,7 +250,7 @@ class _RegistrationsTabState extends State<RegistrationsTab> with AutomaticKeepA
                   OutlinedButton.icon(
                     onPressed: () {
                       final numbers = displayRegs
-                          .map((r) => r.playerWhatsapp.trim())
+                          .map((r) => WhatsappHelper.formatNumber(r.playerWhatsapp))
                           .where((num) => num.isNotEmpty)
                           .join(', ');
                       if (numbers.isNotEmpty) {
@@ -349,11 +350,12 @@ class _RegistrationItem extends StatelessWidget {
               children: [
                 InkWell(
                   onTap: () {
-                    if (reg.playerWhatsapp.isNotEmpty) {
-                      Clipboard.setData(ClipboardData(text: reg.playerWhatsapp));
+                    final formatted = WhatsappHelper.formatNumber(reg.playerWhatsapp);
+                    if (formatted.isNotEmpty) {
+                      Clipboard.setData(ClipboardData(text: formatted));
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('WhatsApp number copied: ${reg.playerWhatsapp}'),
+                          content: Text('WhatsApp number copied: $formatted'),
                           duration: const Duration(seconds: 2),
                           backgroundColor: AppTheme.accentGreen,
                         ),
@@ -367,7 +369,7 @@ class _RegistrationItem extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'WhatsApp: ${reg.playerWhatsapp}',
+                          'WhatsApp: ${WhatsappHelper.formatNumber(reg.playerWhatsapp)}',
                           style: GoogleFonts.poppins(fontSize: 12, color: Colors.white70),
                         ),
                         const SizedBox(width: 4),

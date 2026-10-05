@@ -9,6 +9,7 @@ import '../../../../core/services/storage_service.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/responsive_helper.dart';
+import '../../../../core/utils/whatsapp_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -207,7 +208,7 @@ class _ProfileDialogState extends State<ProfileDialog> {
                                     'realName': nameEditController.text.trim(),
                                     'ign': ignEditController.text.trim(),
                                     'eFootballUid': uidEditController.text.trim(),
-                                    'whatsapp': whatsappEditController.text.trim(),
+                                    'whatsapp': WhatsappHelper.formatNumber(whatsappEditController.text),
                                   },
                                   'reason': reasonEditController.text.trim(),
                                   'status': 'pending',
@@ -1285,7 +1286,7 @@ class _ProfileDialogState extends State<ProfileDialog> {
       });
 
       try {
-        final whatsapp = _whatsappController.text.trim();
+        final whatsapp = WhatsappHelper.formatNumber(_whatsappController.text);
         final efootballUid = _uidController.text.trim();
         String? playerId = widget.player?.id;
         String photoUrl = _currentPhotoUrl ?? '';

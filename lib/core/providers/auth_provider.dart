@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../services/database_service.dart';
+import '../utils/whatsapp_helper.dart';
 import '../../features/profile/models/player_profile_model.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -92,7 +93,7 @@ class AuthProvider with ChangeNotifier {
     try {
       // Normalize data
       final cleanEmail = email.trim().toLowerCase();
-      final cleanWhatsapp = whatsapp.trim();
+      final cleanWhatsapp = WhatsappHelper.formatNumber(whatsapp);
       final cleanUid = efootballUid.trim();
       final cleanName = name.trim();
       final cleanIgn = ign.trim();

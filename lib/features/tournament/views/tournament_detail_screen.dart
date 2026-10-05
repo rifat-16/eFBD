@@ -11,6 +11,7 @@ import '../models/registration_model.dart';
 import '../../profile/models/player_profile_model.dart';
 import '../../profile/views/widgets/profile_dialog.dart';
 import '../../match_hub/models/match_model.dart';
+import '../../match_hub/views/widgets/match_action_card.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/widgets/web_safe_image.dart';
 import 'package:provider/provider.dart';
@@ -261,125 +262,6 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     return entries;
   }
 
-  Widget _buildMyMatchSection(Tournament tournament) {
-    final authProvider = context.watch<AuthProvider>();
-    if (authProvider.user == null) {
-      return const Center(child: Text('Please login to see your match.', style: TextStyle(color: AppTheme.textGrey)));
-    }
-
-    return StreamBuilder<TournamentMatch?>(
-      stream: DatabaseService().getMyMatchByTournament(tournament.id, authProvider.user!.uid),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-        
-        final match = snapshot.data;
-
-        if (match == null) {
-          return const Center(
-            child: Text('No matches assigned to you yet.', style: TextStyle(color: AppTheme.textGrey)),
-          );
-        }
-
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppTheme.cardBackground,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.3)),
-                ),
-                child: Column(
-                  children: [
-                    Text(match.round.toUpperCase(), style: GoogleFonts.rajdhani(color: AppTheme.primaryGold, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                    if (match.deadline != null && !match.isCompleted) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        'DEADLINE: ${match.deadline!.day}/${match.deadline!.month} ${match.deadline!.hour.toString().padLeft(2, '0')}:${match.deadline!.minute.toString().padLeft(2, '0')}',
-                        style: GoogleFonts.rajdhani(
-                          color: Colors.redAccent,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 24),
-                    if (match.player2Id == 'BYE') ...[
-                      const Icon(Icons.auto_awesome, color: AppTheme.primaryGold, size: 48),
-                      const SizedBox(height: 16),
-                      Text('YOU GOT A BYE!', style: GoogleFonts.rajdhani(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.accentGreen, letterSpacing: 1)),
-                      const SizedBox(height: 8),
-                      Text('You have automatically advanced to the next round.', textAlign: TextAlign.center, style: GoogleFonts.poppins(color: AppTheme.textGrey, fontSize: 14)),
-                    ] else ...[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _buildMatchPlayer(match.player1Ign, match.player1Id, true),
-                          Text(
-                            match.isCompleted ? '${match.player1Score} - ${match.player2Score}' : 'VS',
-                            style: GoogleFonts.rajdhani(fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 2),
-                          ),
-                          _buildMatchPlayer(match.player2Ign, match.player2Id, false),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                      if (!match.isCompleted && match.resultSubmittedBy == null)
-                        ElevatedButton.icon(
-                          onPressed: () => _showSubmitScoreDialog(match),
-                          icon: const Icon(Icons.upload_file),
-                          label: Text('SUBMIT RESULT', style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, letterSpacing: 1)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryGold,
-                            foregroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                          ),
-                        )
-                      else if (match.resultSubmittedBy != null && !match.isVerified)
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            'RESULT PENDING VERIFICATION',
-                            style: GoogleFonts.rajdhani(
-                              color: Colors.orange,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        )
-                      else if (match.isVerified)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.verified, color: AppTheme.accentGreen),
-                            const SizedBox(width: 8),
-                            Text(
-                              'MATCH COMPLETED',
-                              style: GoogleFonts.rajdhani(
-                                color: AppTheme.accentGreen,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildMatchPlayer(String ign, String? playerId, bool isLeft) {
     return Column(
       children: [
@@ -575,7 +457,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
           tabViews = [
             _buildInfoTab(tournament),
             _PlayersListTab(tournamentId: tournament.id),
-            _buildMyMatchSection(tournament),
+            _MyMatchesTab(tournament: tournament),
           ];
         } else {
           tabs = [
@@ -590,7 +472,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
           ];
           tabViews = [
             _buildInfoTab(tournament),
-            _buildMyMatchSection(tournament),
+            _MyMatchesTab(tournament: tournament),
             _PlayersListTab(tournamentId: tournament.id),
             if (tournament.type == TournamentType.groupAndKnockout) _buildGroupStage(tournament),
             _buildKnockoutBracket(tournament),
@@ -803,7 +685,8 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                   Builder(
                     builder: (context) => ElevatedButton(
                       onPressed: () {
-                        DefaultTabController.of(context).animateTo(0);
+                        final targetIndex = tournament.status == TournamentStatus.upcoming ? 2 : 1;
+                        DefaultTabController.of(context).animateTo(targetIndex);
                       },
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16, vertical: isMobile ? 8 : 12),
@@ -902,6 +785,61 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
         );
       }
     }
+  }
+}
+
+class _MyMatchesTab extends StatefulWidget {
+  final Tournament tournament;
+  const _MyMatchesTab({required this.tournament});
+
+  @override
+  State<_MyMatchesTab> createState() => _MyMatchesTabState();
+}
+
+class _MyMatchesTabState extends State<_MyMatchesTab> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final authProvider = context.watch<AuthProvider>();
+    if (authProvider.user == null) {
+      return const Center(child: Text('Please login to see your matches.', style: TextStyle(color: AppTheme.textGrey)));
+    }
+
+    return StreamBuilder<List<TournamentMatch>>(
+      stream: DatabaseService().getMyMatchesByTournament(widget.tournament.id, authProvider.user!.uid),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator(color: AppTheme.primaryGold));
+        }
+
+        final matches = snapshot.data ?? [];
+
+        if (matches.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(32.0),
+              child: Text('No active matches assigned to you in this tournament yet.', style: TextStyle(color: AppTheme.textGrey)),
+            ),
+          );
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: matches.map((match) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: MatchActionCard(
+                match: match,
+                isLive: !match.isCompleted && match.timestamp.isBefore(DateTime.now()),
+              ),
+            )).toList(),
+          ),
+        );
+      },
+    );
   }
 }
 
