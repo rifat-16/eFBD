@@ -1266,10 +1266,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
             if (match.resultSubmittedBy != null && !match.isVerified)
-              ElevatedButton(
+              ElevatedButton.icon(
                 onPressed: () => _showVerificationDialog(match),
+                icon: const Icon(Icons.image_search, size: 16, color: Colors.black),
                 style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryGold),
-                child: Text('VERIFY',
+                label: Text('VERIFY RESULT',
                     style: GoogleFonts.rajdhani(color: Colors.black, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
               )
             else if (match.isVerified)

@@ -1331,13 +1331,14 @@ class _MatchCard extends StatelessWidget {
           if (match.resultSubmittedBy != null && !match.isVerified)
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
                 onPressed: () => _showMatchVerificationDialog(context, match),
+                icon: const Icon(Icons.image_search, size: 14, color: Colors.black),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryGold,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 ),
-                child: const Text('VERIFY', style: TextStyle(color: Colors.black, fontSize: 10)),
+                label: const Text('VERIFY RESULT', style: TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.bold)),
               ),
             )
           else if (match.isVerified)
