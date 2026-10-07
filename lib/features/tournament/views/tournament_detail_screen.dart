@@ -63,28 +63,110 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
             const SizedBox(height: 32),
           ],
           if (tournament.prizes.isNotEmpty) _buildPrizePoolSection(tournament.prizes),
-          if (tournament.rules.isNotEmpty) ...[
-            Text('TOURNAMENT RULES', style: GoogleFonts.rajdhani(color: AppTheme.primaryGold, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-            const SizedBox(height: 12),
-            ...tournament.rules.map((rule) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8),
-                        child: Icon(Icons.circle, size: 6, color: AppTheme.primaryGold),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(rule, style: GoogleFonts.poppins(color: Colors.white70, height: 1.5, fontSize: 14)),
-                      ),
-                    ],
-                  ),
-                )),
-          ],
+          if (tournament.rules.isNotEmpty) _buildRulesSection(tournament.rules),
         ],
       ),
+    );
+  }
+
+  Widget _buildRulesSection(List<String> rules) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.gavel_rounded, color: AppTheme.primaryGold, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'TOURNAMENT RULES',
+              style: GoogleFonts.rajdhani(
+                color: AppTheme.primaryGold,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppTheme.cardBackground,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.15)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: rules.map((rawRule) {
+              String rule = rawRule.trim();
+              if (rule.isEmpty) return const SizedBox.shrink();
+
+              final isHeader = !rule.startsWith('*') &&
+                  !rule.startsWith('-') &&
+                  RegExp(r'^[০-৯0-9]+\.\s').hasMatch(rule);
+
+              rule = rule.replaceAll(RegExp(r'^[\*\-\•\–\—]\s*'), '').trim();
+
+              if (isHeader) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 14, bottom: 8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryGold.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.25)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.bookmark_rounded, size: 16, color: AppTheme.primaryGold),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            rule,
+                            style: GoogleFonts.rajdhani(
+                              color: AppTheme.primaryGold,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return Padding(
+                padding: const EdgeInsets.only(left: 8, bottom: 10),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(top: 5, right: 10),
+                      child: Icon(Icons.check_circle_outline_rounded, size: 14, color: AppTheme.accentGreen),
+                    ),
+                    Expanded(
+                      child: Text(
+                        rule,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white.withValues(alpha: 0.88),
+                          height: 1.6,
+                          fontSize: 13.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 32),
+      ],
     );
   }
 
@@ -159,11 +241,11 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
               Color iconColor = AppTheme.primaryGold;
               Color badgeBg = AppTheme.primaryGold.withValues(alpha: 0.1);
 
-              if (labelLower.contains('1st') || labelLower.contains('first') || labelLower.contains('champion') || labelLower.contains('winner')) {
+              if (labelLower.contains('champion') || labelLower.contains('1st') || labelLower.contains('first')) {
                 icon = Icons.emoji_events;
                 iconColor = const Color(0xFFFFD700);
                 badgeBg = const Color(0xFFFFD700).withValues(alpha: 0.15);
-              } else if (labelLower.contains('2nd') || labelLower.contains('second') || labelLower.contains('runner')) {
+              } else if (labelLower.contains('runner') || labelLower.contains('2nd') || labelLower.contains('second')) {
                 icon = Icons.workspace_premium;
                 iconColor = const Color(0xFFC0C0C0);
                 badgeBg = const Color(0xFFC0C0C0).withValues(alpha: 0.15);
@@ -171,6 +253,10 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                 icon = Icons.military_tech;
                 iconColor = const Color(0xFFCD7F32);
                 badgeBg = const Color(0xFFCD7F32).withValues(alpha: 0.15);
+              } else if (labelLower.contains('golden boot') || labelLower.contains('boot')) {
+                icon = Icons.sports_soccer;
+                iconColor = const Color(0xFFFF9800);
+                badgeBg = const Color(0xFFFF9800).withValues(alpha: 0.15);
               } else {
                 icon = Icons.stars_rounded;
                 iconColor = AppTheme.primaryGold.withValues(alpha: 0.8);
@@ -234,7 +320,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
 
     int getPriority(String label) {
       final l = label.toLowerCase().trim();
-      if (l.contains('1st') || l.contains('first') || l.contains('champion') || l.contains('winner')) {
+      if (l.contains('1st') || l.contains('first') || l.contains('champion')) {
         return 1;
       } else if (l.contains('2nd') || l.contains('second') || l.contains('runner')) {
         return 2;
@@ -244,6 +330,10 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
         return 4;
       } else if (l.contains('5th') || l.contains('fifth')) {
         return 5;
+      } else if (l.contains('golden boot') || l.contains('boot')) {
+        return 20;
+      } else if (l.contains('winner')) {
+        return 1;
       }
       final match = RegExp(r'\d+').firstMatch(l);
       if (match != null) {
