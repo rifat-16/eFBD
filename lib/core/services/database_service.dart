@@ -660,6 +660,33 @@ class DatabaseService {
     }
   }
 
+  Future<int> resolveExpiredMatches(String tournamentId) async {
+    final matchesSnapshot = await _db
+        .collection('matches')
+        .where('tournamentId', isEqualTo: tournamentId)
+        .where('isCompleted', isEqualTo: false)
+        .get();
+
+    final now = DateTime.now();
+    int count = 0;
+
+    for (var doc in matchesSnapshot.docs) {
+      final match = TournamentMatch.fromFirestore(doc);
+      if (match.deadline != null && match.deadline!.isBefore(now)) {
+        final expiredMatch = match.copyWith(
+          player1Score: 0,
+          player2Score: 0,
+          isCompleted: true,
+          isVerified: true,
+        );
+        await verifyMatchResult(expiredMatch);
+        count++;
+      }
+    }
+
+    return count;
+  }
+
   // --- Profile Update Requests ---
   Future<void> submitProfileUpdateRequest(Map<String, dynamic> request) {
     return _db.collection('profile_update_requests').add(request);

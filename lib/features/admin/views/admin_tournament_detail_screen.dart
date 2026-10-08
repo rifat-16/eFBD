@@ -472,19 +472,53 @@ class _MatchesTabState extends State<MatchesTab> with AutomaticKeepAliveClientMi
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-                  Text(
-                    'MATCH FIXTURES',
-                    style: GoogleFonts.rajdhani(fontSize: 22, color: AppTheme.primaryGold, fontWeight: FontWeight.bold, letterSpacing: 1.5),
-                  ),
+            Text(
+              'MATCH FIXTURES',
+              style: GoogleFonts.rajdhani(fontSize: 22, color: AppTheme.primaryGold, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+            ),
             if (t.status != TournamentStatus.completed)
-              ElevatedButton.icon(
-                onPressed: () => _showGenerationOptions(context),
-                icon: const Icon(Icons.auto_awesome, color: Colors.black),
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryGold),
-                label: Text(
-                  'GENERATE',
-                  style: GoogleFonts.rajdhani(color: Colors.black, fontWeight: FontWeight.bold, letterSpacing: 1.2),
-                ),
+              Row(
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      final resolvedCount = await DatabaseService().resolveExpiredMatches(t.id);
+                      if (resolvedCount > 0) {
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text('RESOLVED $resolvedCount EXPIRED MATCHES TO 0-0!'),
+                            backgroundColor: AppTheme.accentGreen,
+                          ),
+                        );
+                      } else {
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('No expired uncompleted matches found.'),
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.timer_off, size: 16, color: Colors.orangeAccent),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.orangeAccent,
+                      side: const BorderSide(color: Colors.orangeAccent),
+                    ),
+                    label: Text(
+                      'AUTO 0-0 EXPIRED',
+                      style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: () => _showGenerationOptions(context),
+                    icon: const Icon(Icons.auto_awesome, color: Colors.black),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryGold),
+                    label: Text(
+                      'GENERATE',
+                      style: GoogleFonts.rajdhani(color: Colors.black, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                    ),
+                  ),
+                ],
               ),
           ],
         ),
@@ -850,6 +884,9 @@ class _MatchesTabState extends State<MatchesTab> with AutomaticKeepAliveClientMi
   }
 
   void _showMatchVerificationDialog(TournamentMatch match) {
+    final s1Controller = TextEditingController(text: (match.player1Score ?? 0).toString());
+    final s2Controller = TextEditingController(text: (match.player2Score ?? 0).toString());
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -858,50 +895,100 @@ class _MatchesTabState extends State<MatchesTab> with AutomaticKeepAliveClientMi
           'VERIFY MATCH RESULT',
           style: GoogleFonts.rajdhani(color: AppTheme.primaryGold, fontWeight: FontWeight.bold, fontSize: 22, letterSpacing: 1.5),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FutureBuilder<Player?>(
-              future: match.resultSubmittedBy != null && match.resultSubmittedBy!.length > 20 
-                  ? DatabaseService().getPlayer(match.resultSubmittedBy!) 
-                  : Future.value(null),
-              builder: (context, snapshot) {
-                final displayName = snapshot.data?.ign ?? match.resultSubmittedBy ?? 'Unknown';
-                return Text(
-                  'Result submitted by: $displayName',
-                  style: GoogleFonts.poppins(color: AppTheme.textGrey, fontSize: 13),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            if (match.screenshotUrl != null)
-              Container(
-                height: 250,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white10),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: WebSafeImage(
-                    imageUrl: match.screenshotUrl!,
-                    fit: BoxFit.contain,
-                    onTap: () => Navigator.push(
-                      context, 
-                      MaterialPageRoute(
-                        builder: (_) => FullScreenImageViewer(imageUrl: match.screenshotUrl!)
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FutureBuilder<Player?>(
+                future: match.resultSubmittedBy != null && match.resultSubmittedBy!.length > 20 
+                    ? DatabaseService().getPlayer(match.resultSubmittedBy!) 
+                    : Future.value(null),
+                builder: (context, snapshot) {
+                  final displayName = snapshot.data?.ign ?? match.resultSubmittedBy ?? 'Unknown';
+                  return Text(
+                    'Result submitted by: $displayName',
+                    style: GoogleFonts.poppins(color: AppTheme.textGrey, fontSize: 13),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              if (match.screenshotUrl != null)
+                Container(
+                  height: 250,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white10),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: WebSafeImage(
+                      imageUrl: match.screenshotUrl!,
+                      fit: BoxFit.contain,
+                      onTap: () => Navigator.push(
+                        context, 
+                        MaterialPageRoute(
+                          builder: (_) => FullScreenImageViewer(imageUrl: match.screenshotUrl!)
+                        ),
                       ),
                     ),
                   ),
                 ),
+              const SizedBox(height: 16),
+              Text(
+                'EDIT SCORES IF NEEDED (ADMIN CORRECTION)',
+                style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0),
               ),
-            const SizedBox(height: 16),
-            Text(
-              '${match.player1Ign} ${match.player1Score} - ${match.player2Score} ${match.player2Ign}',
-              style: GoogleFonts.rajdhani(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.2),
-            ),
-          ],
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          match.player1Ign,
+                          style: GoogleFonts.rajdhani(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        TextField(
+                          controller: s1Controller,
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.rajdhani(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.primaryGold),
+                          decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(vertical: 8)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    child: Text('-', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          match.player2Ign,
+                          style: GoogleFonts.rajdhani(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        TextField(
+                          controller: s2Controller,
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.rajdhani(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.primaryGold),
+                          decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(vertical: 8)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -911,7 +998,15 @@ class _MatchesTabState extends State<MatchesTab> with AutomaticKeepAliveClientMi
           ElevatedButton(
             onPressed: () async {
               final navigator = Navigator.of(context);
-              await DatabaseService().verifyMatchResult(match);
+              final s1 = int.tryParse(s1Controller.text.trim()) ?? (match.player1Score ?? 0);
+              final s2 = int.tryParse(s2Controller.text.trim()) ?? (match.player2Score ?? 0);
+
+              final matchToVerify = match.copyWith(
+                player1Score: s1,
+                player2Score: s2,
+              );
+
+              await DatabaseService().verifyMatchResult(matchToVerify);
               navigator.pop();
             },
             child: Text('VERIFY', style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, color: Colors.black, letterSpacing: 1.2)),
@@ -1339,6 +1434,35 @@ class _MatchCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 ),
                 label: const Text('VERIFY RESULT', style: TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.bold)),
+              ),
+            )
+          else if (!match.isCompleted && match.deadline != null && match.deadline!.isBefore(DateTime.now()))
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: OutlinedButton.icon(
+                onPressed: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  final expiredMatch = match.copyWith(
+                    player1Score: 0,
+                    player2Score: 0,
+                    isCompleted: true,
+                    isVerified: true,
+                  );
+                  await DatabaseService().verifyMatchResult(expiredMatch);
+                  messenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('Match resolved to 0-0 due to expired deadline.'),
+                      backgroundColor: AppTheme.accentGreen,
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.timer_off, size: 14, color: Colors.orangeAccent),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.orangeAccent,
+                  side: const BorderSide(color: Colors.orangeAccent),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                ),
+                label: const Text('0-0 EXPIRED', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
               ),
             )
           else if (match.isVerified)

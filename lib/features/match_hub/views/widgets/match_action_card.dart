@@ -63,7 +63,7 @@ class MatchActionCard extends StatelessWidget {
             runSpacing: 8,
             alignment: WrapAlignment.center,
             children: [
-              if (!match.isCompleted && match.resultSubmittedBy == null && isParticipant) ...[
+              if (!match.isCompleted && isParticipant) ...[
                 _ActionButton(
                   onPressed: () => _launchWhatsApp(context),
                   icon: Icons.chat,
@@ -72,8 +72,10 @@ class MatchActionCard extends StatelessWidget {
                 ),
                 _ActionButton(
                   onPressed: () => _showReportScoreDialog(context),
-                  icon: Icons.emoji_events,
-                  label: isMobile ? 'REPORT' : 'REPORT SCORE',
+                  icon: match.resultSubmittedBy != null ? Icons.edit_note_rounded : Icons.emoji_events,
+                  label: isMobile 
+                      ? (match.resultSubmittedBy != null ? 'EDIT' : 'REPORT') 
+                      : (match.resultSubmittedBy != null ? 'EDIT RESULT' : 'REPORT SCORE'),
                   color: AppTheme.primaryGold,
                   isPrimary: true,
                 ),
@@ -310,8 +312,12 @@ class MatchActionCard extends StatelessWidget {
   }
 
   void _showReportScoreDialog(BuildContext context) {
-    final s1Controller = TextEditingController();
-    final s2Controller = TextEditingController();
+    final s1Controller = TextEditingController(
+      text: match.player1Score != null ? match.player1Score.toString() : '',
+    );
+    final s2Controller = TextEditingController(
+      text: match.player2Score != null ? match.player2Score.toString() : '',
+    );
     Uint8List? screenshotBytes;
     bool isUploading = false;
     final isMobile = ResponsiveHelper.isMobile(context);
