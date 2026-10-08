@@ -1516,9 +1516,35 @@ class _GroupsTabState extends State<GroupsTab> with AutomaticKeepAliveClientMixi
             if (index == 0) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 24),
-                child: Text(
-                  'GROUPS & STANDINGS',
-                  style: GoogleFonts.rajdhani(fontSize: 22, color: AppTheme.primaryGold, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'GROUPS & STANDINGS',
+                      style: GoogleFonts.rajdhani(fontSize: 22, color: AppTheme.primaryGold, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        await DatabaseService().recalculateGroupStandings(widget.tournament.id);
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('RECALCULATED & AUDITED STANDINGS FOR ALL GROUPS!'),
+                            backgroundColor: AppTheme.accentGreen,
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.refresh_rounded, size: 16, color: AppTheme.primaryGold),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primaryGold,
+                        side: const BorderSide(color: AppTheme.primaryGold),
+                      ),
+                      label: Text(
+                        'AUDIT & RECALCULATE',
+                        style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                      ),
+                    ),
+                  ],
                 ),
               );
             }

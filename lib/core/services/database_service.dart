@@ -510,42 +510,7 @@ class DatabaseService {
 
     // 3. Update Group Stats if it's a Group Match
     if (match.groupId != null && match.groupId!.isNotEmpty) {
-      final groupDoc = await _db.collection('groups').doc(match.groupId).get();
-      if (groupDoc.exists) {
-        final group = TournamentGroup.fromFirestore(groupDoc);
-        final stats = Map<String, GroupStats>.from(group.playerStats);
-
-        // Player 1
-        final p1 = stats[match.player1Id] ?? GroupStats();
-        stats[match.player1Id] = GroupStats(
-          played: p1.played + 1,
-          won: p1.won + (s1 > s2 ? 1 : 0),
-          drawn: p1.drawn + (s1 == s2 ? 1 : 0),
-          lost: p1.lost + (s1 < s2 ? 1 : 0),
-          goalsFor: p1.goalsFor + s1,
-          goalsAgainst: p1.goalsAgainst + s2,
-          points: p1.points + (s1 > s2 ? 3 : (s1 == s2 ? 1 : 0)),
-        );
-
-        // Player 2
-        final p2 = stats[match.player2Id] ?? GroupStats();
-        stats[match.player2Id] = GroupStats(
-          played: p2.played + 1,
-          won: p2.won + (s2 > s1 ? 1 : 0),
-          drawn: p2.drawn + (s2 == s1 ? 1 : 0),
-          lost: p2.lost + (s2 < s1 ? 1 : 0),
-          goalsFor: p2.goalsFor + s2,
-          goalsAgainst: p2.goalsAgainst + s1,
-          points: p2.points + (s2 > s1 ? 3 : (s2 == s1 ? 1 : 0)),
-        );
-
-        await _db.collection('groups').doc(match.groupId).update({
-          'playerStats': stats.map((key, value) => MapEntry(key, value.toMap())),
-        });
-
-        // Check if all group stage matches are completed to notify admin or auto-advance
-        // (Manual advancement is currently preferred in the UI)
-      }
+      await recalculateGroupStandings(match.tournamentId);
     } else {
       // 4. Handle Knockout Progression
       await _handleKnockoutProgression(match);
@@ -1110,17 +1075,84 @@ class DatabaseService {
     await batch.commit();
   }
 
+  Future<void> recalculateGroupStandings(String tournamentId) async {
+    final groupsQuery = await _db
+        .collection('groups')
+        .where('tournamentId', isEqualTo: tournamentId)
+        .get();
+
+    if (groupsQuery.docs.isEmpty) return;
+
+    final matchesQuery = await _db
+        .collection('matches')
+        .where('tournamentId', isEqualTo: tournamentId)
+        .where('round', isEqualTo: 'Group Stage')
+        .where('isVerified', isEqualTo: true)
+        .get();
+
+    final matches = matchesQuery.docs.map((doc) => TournamentMatch.fromFirestore(doc)).toList();
+
+    for (var groupDoc in groupsQuery.docs) {
+      final group = TournamentGroup.fromFirestore(groupDoc);
+      final playerIds = group.playerIds;
+      final Map<String, GroupStats> freshStats = {
+        for (var pId in playerIds) pId: GroupStats(),
+      };
+
+      // Filter matches belonging strictly to this group
+      final groupMatches = matches.where((m) => m.groupId == group.id).toList();
+
+      for (var m in groupMatches) {
+        final s1 = m.player1Score ?? 0;
+        final s2 = m.player2Score ?? 0;
+
+        if (freshStats.containsKey(m.player1Id)) {
+          final p1 = freshStats[m.player1Id]!;
+          freshStats[m.player1Id] = GroupStats(
+            played: p1.played + 1,
+            won: p1.won + (s1 > s2 ? 1 : 0),
+            drawn: p1.drawn + (s1 == s2 ? 1 : 0),
+            lost: p1.lost + (s1 < s2 ? 1 : 0),
+            goalsFor: p1.goalsFor + s1,
+            goalsAgainst: p1.goalsAgainst + s2,
+            points: p1.points + (s1 > s2 ? 3 : (s1 == s2 ? 1 : 0)),
+          );
+        }
+
+        if (freshStats.containsKey(m.player2Id)) {
+          final p2 = freshStats[m.player2Id]!;
+          freshStats[m.player2Id] = GroupStats(
+            played: p2.played + 1,
+            won: p2.won + (s2 > s1 ? 1 : 0),
+            drawn: p2.drawn + (s2 == s1 ? 1 : 0),
+            lost: p2.lost + (s2 < s1 ? 1 : 0),
+            goalsFor: p2.goalsFor + s2,
+            goalsAgainst: p2.goalsAgainst + s1,
+            points: p2.points + (s2 > s1 ? 3 : (s2 == s1 ? 1 : 0)),
+          );
+        }
+      }
+
+      await _db.collection('groups').doc(group.id).update({
+        'playerStats': freshStats.map((key, value) => MapEntry(key, value.toMap())),
+      });
+    }
+  }
+
   Future<void> advanceToKnockout(String tournamentId, int topNPerGroup, {DateTime? deadline}) async {
+    // 1. First, recalculate group standings from actual verified matches
+    await recalculateGroupStandings(tournamentId);
+
     final groupsQuery = await _db.collection('groups').where('tournamentId', isEqualTo: tournamentId).get();
     
     if (groupsQuery.docs.isEmpty) throw Exception("No groups found in this tournament.");
 
-    // Sort groups by name to ensure consistent progression (Group A, B, C...)
+    // Sort groups alphabetically by name (Group A, B, C...)
     final groups = groupsQuery.docs.map((doc) => TournamentGroup.fromFirestore(doc)).toList();
-    groups.sort((a, b) => a.name.compareTo(b.name));
+    groups.sort((a, b) => _compareGroupNames(a.name, b.name));
 
-    List<String> advancedPlayerIds = [];
-
+    // For each group, get sorted players by PTS desc, GD desc, GF desc
+    List<List<String>> groupRankings = [];
     for (var group in groups) {
       List<String> sortedIds = List.from(group.playerIds);
       sortedIds.sort((a, b) {
@@ -1132,49 +1164,101 @@ class DatabaseService {
         // 2. Goal Difference
         if (statsB.goalDifference != statsA.goalDifference) return statsB.goalDifference.compareTo(statsA.goalDifference);
         // 3. Goals For
-        return statsB.goalsFor.compareTo(statsA.goalsFor);
+        if (statsB.goalsFor != statsA.goalsFor) return statsB.goalsFor.compareTo(statsA.goalsFor);
+        // 4. Tie-breaker
+        return a.compareTo(b);
       });
-      
-      advancedPlayerIds.addAll(sortedIds.take(topNPerGroup));
+      groupRankings.add(sortedIds);
     }
 
-    if (advancedPlayerIds.isEmpty) throw Exception("No players found to advance.");
+    List<Pair<String, String>> matchPairings = [];
 
-    // Ensure uniqueness in case of data corruption
-    advancedPlayerIds = advancedPlayerIds.toSet().toList();
+    if (topNPerGroup == 2 && groups.length >= 2) {
+      // Standard World Cup Crossover Pairing (Group A1 vs Group B2, Group B1 vs Group A2, etc.)
+      final numGroups = groups.length;
+      final halfMatchCount = numGroups ~/ 2;
+      final Map<int, Pair<String, String>> bracketMatches = {};
 
-    // Create knockout fixtures
-    final players = await getPlayers();
-    
-    // Determine target size for knockout (power of 2)
-    int count = advancedPlayerIds.length;
+      for (int i = 0; i < numGroups; i += 2) {
+        final g1 = i;
+        final g2 = (i + 1 < numGroups) ? i + 1 : i;
+
+        final g1Winners = groupRankings[g1];
+        final g2Winners = g2 < groupRankings.length ? groupRankings[g2] : <String>[];
+
+        final a1 = g1Winners.isNotEmpty ? g1Winners[0] : 'BYE';
+        final a2 = g1Winners.length > 1 ? g1Winners[1] : 'BYE';
+
+        final b1 = g2Winners.isNotEmpty ? g2Winners[0] : 'BYE';
+        final b2 = g2Winners.length > 1 ? g2Winners[1] : 'BYE';
+
+        final topIndex = i ~/ 2; // Bracket indices 0, 1, 2, 3...
+        final bottomIndex = topIndex + halfMatchCount; // Bracket indices 4, 5, 6, 7...
+
+        // Top half match: Group A1 vs Group B2
+        bracketMatches[topIndex] = Pair(a1, b2);
+        // Bottom half match: Group B1 vs Group A2
+        bracketMatches[bottomIndex] = Pair(b1, a2);
+      }
+
+      final sortedIndices = bracketMatches.keys.toList()..sort();
+      for (var idx in sortedIndices) {
+        matchPairings.add(bracketMatches[idx]!);
+      }
+    } else {
+      // Generic fallback
+      List<String> flatAdvanced = [];
+      for (var ranking in groupRankings) {
+        flatAdvanced.addAll(ranking.take(topNPerGroup));
+      }
+      for (int i = 0; i < flatAdvanced.length; i += 2) {
+        final p1 = flatAdvanced[i];
+        final p2 = (i + 1 < flatAdvanced.length) ? flatAdvanced[i + 1] : 'BYE';
+        matchPairings.add(Pair(p1, p2));
+      }
+    }
+
+    if (matchPairings.isEmpty) throw Exception("No matches could be generated.");
+
+    // Delete existing knockout matches for this tournament to allow clean regeneration/reset
+    final existingKnockoutMatches = await _db
+        .collection('matches')
+        .where('tournamentId', isEqualTo: tournamentId)
+        .where('round', isNotEqualTo: 'Group Stage')
+        .get();
+
+    final deleteBatch = _db.batch();
+    for (var doc in existingKnockoutMatches.docs) {
+      if (doc.data()['round'] != 'Qualifying Round') {
+        deleteBatch.delete(doc.reference);
+      }
+    }
+    await deleteBatch.commit();
+
+    // Create target size for knockout (power of 2)
+    int count = matchPairings.length * 2;
     int targetSize = 2;
     while (targetSize < count) {
       targetSize *= 2;
     }
 
     String roundName = getRoundName(targetSize);
+    final players = await getPlayers();
+    final ignMap = {for (var p in players) p.id: p.ign};
+
     List<TournamentMatch> matches = [];
-    int matchCount = targetSize ~/ 2;
 
-    for (int i = 0; i < matchCount; i++) {
-      // For Group Stage advancement, we usually want to pair seeds:
-      // Group A Winner vs Group B Runner-up, etc.
-      // But for a generic implementation, we use the sorted advanced list
-      final p1Idx = i * 2;
-      final p2Idx = i * 2 + 1;
-
-      String p1Id = p1Idx < advancedPlayerIds.length ? advancedPlayerIds[p1Idx] : 'BYE';
-      String p2Id = p2Idx < advancedPlayerIds.length ? advancedPlayerIds[p2Idx] : 'BYE';
+    for (int i = 0; i < matchPairings.length; i++) {
+      final pair = matchPairings[i];
+      String p1Id = pair.first;
+      String p2Id = pair.second;
 
       if (p1Id == 'BYE' && p2Id == 'BYE') continue;
 
-      final p1 = p1Id != 'BYE' ? players.firstWhere((p) => p.id == p1Id, orElse: () => Player(id: p1Id, name: 'Unknown', email: '', ign: 'Unknown', uid: '')) : null;
-      final p2 = p2Id != 'BYE' ? players.firstWhere((p) => p.id == p2Id, orElse: () => Player(id: p2Id, name: 'Unknown', email: '', ign: 'Unknown', uid: '')) : null;
-
-      String p1Ign = p1?.ign ?? 'BYE';
+      String p1Ign = p1Id == 'BYE' ? 'BYE' : (ignMap[p1Id] ?? 'Unknown');
       if (p1Ign.isEmpty || p1Ign.toLowerCase() == 'loading..') p1Ign = 'Unknown';
-      String p2Ign = p2?.ign ?? 'BYE';
+
+      String p2Ign = p2Id == 'BYE' ? 'BYE' : (ignMap[p2Id] ?? 'Unknown');
       if (p2Ign.isEmpty || p2Ign.toLowerCase() == 'loading..') p2Ign = 'Unknown';
 
       matches.add(TournamentMatch(
@@ -1332,6 +1416,12 @@ class DatabaseService {
   Future<void> updateCommunityConfig(CommunityConfig config) {
     return _db.collection('config').doc('community').set(config.toFirestore());
   }
+}
+
+class Pair<A, B> {
+  final A first;
+  final B second;
+  Pair(this.first, this.second);
 }
 
 class _CachedPlayer {
