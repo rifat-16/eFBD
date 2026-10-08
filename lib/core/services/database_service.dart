@@ -1314,15 +1314,15 @@ class DatabaseService {
     if (matchPairings.isEmpty) throw Exception("No matches could be generated.");
 
     // Delete existing knockout matches for this tournament to allow clean regeneration/reset
-    final existingKnockoutMatches = await _db
+    final allMatchesForTournament = await _db
         .collection('matches')
         .where('tournamentId', isEqualTo: tournamentId)
-        .where('round', isNotEqualTo: 'Group Stage')
         .get();
 
     final deleteBatch = _db.batch();
-    for (var doc in existingKnockoutMatches.docs) {
-      if (doc.data()['round'] != 'Qualifying Round') {
+    for (var doc in allMatchesForTournament.docs) {
+      final round = doc.data()['round']?.toString() ?? '';
+      if (round != 'Group Stage' && round != 'Qualifying Round') {
         deleteBatch.delete(doc.reference);
       }
     }
