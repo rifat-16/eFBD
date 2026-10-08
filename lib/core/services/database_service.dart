@@ -1075,6 +1075,93 @@ class DatabaseService {
     await batch.commit();
   }
 
+  Future<int> auditAndFixGroupMatches(String tournamentId) async {
+    final groupsQuery = await _db
+        .collection('groups')
+        .where('tournamentId', isEqualTo: tournamentId)
+        .get();
+
+    if (groupsQuery.docs.isEmpty) return 0;
+
+    final players = await getPlayers();
+    final ignMap = {for (var p in players) p.id: p.ign};
+
+    // Get all matches in group stage for this tournament without composite query
+    final allMatchesQuery = await _db
+        .collection('matches')
+        .where('tournamentId', isEqualTo: tournamentId)
+        .get();
+
+    final allMatches = allMatchesQuery.docs.map((doc) => TournamentMatch.fromFirestore(doc)).toList();
+    final groupMatches = allMatches.where((m) => m.round == 'Group Stage' || (m.groupId != null && m.groupId!.isNotEmpty)).toList();
+
+    int fixedCount = 0;
+
+    for (var groupDoc in groupsQuery.docs) {
+      final group = TournamentGroup.fromFirestore(groupDoc);
+      final pIds = group.playerIds;
+
+      for (int i = 0; i < pIds.length; i++) {
+        for (int j = i + 1; j < pIds.length; j++) {
+          final p1 = pIds[i];
+          final p2 = pIds[j];
+
+          // Check if match between p1 and p2 exists
+          final match = groupMatches.firstWhere(
+            (m) => (m.player1Id == p1 && m.player2Id == p2) || (m.player1Id == p2 && m.player2Id == p1),
+            orElse: () => TournamentMatch(
+              id: '',
+              tournamentId: '',
+              player1Id: '',
+              player2Id: '',
+              player1Ign: '',
+              player2Ign: '',
+              round: 'Group Stage',
+              timestamp: DateTime.now(),
+            ),
+          );
+
+          if (match.id.isNotEmpty) {
+            // Check if match.groupId needs to be linked to group.id
+            if (match.groupId != group.id) {
+              await _db.collection('matches').doc(match.id).update({
+                'groupId': group.id,
+                'round': 'Group Stage',
+              });
+              fixedCount++;
+            }
+          } else {
+            // Missing match - restore it in Firestore
+            String p1Ign = ignMap[p1] ?? 'Unknown';
+            String p2Ign = ignMap[p2] ?? 'Unknown';
+
+            await _db.collection('matches').add({
+              'tournamentId': tournamentId,
+              'groupId': group.id,
+              'player1Id': p1,
+              'player2Id': p2,
+              'player1Ign': p1Ign,
+              'player2Ign': p2Ign,
+              'player1Score': null,
+              'player2Score': null,
+              'isCompleted': false,
+              'isVerified': false,
+              'timestamp': FieldValue.serverTimestamp(),
+              'round': 'Group Stage',
+              'bracketIndex': 0,
+            });
+            fixedCount++;
+          }
+        }
+      }
+    }
+
+    // Recalculate standings after auditing matches
+    await recalculateGroupStandings(tournamentId);
+
+    return fixedCount;
+  }
+
   Future<void> recalculateGroupStandings(String tournamentId) async {
     final groupsQuery = await _db
         .collection('groups')
@@ -1083,14 +1170,17 @@ class DatabaseService {
 
     if (groupsQuery.docs.isEmpty) return;
 
+    // Single query without composite index
     final matchesQuery = await _db
         .collection('matches')
         .where('tournamentId', isEqualTo: tournamentId)
-        .where('round', isEqualTo: 'Group Stage')
-        .where('isVerified', isEqualTo: true)
         .get();
 
-    final matches = matchesQuery.docs.map((doc) => TournamentMatch.fromFirestore(doc)).toList();
+    final allMatches = matchesQuery.docs.map((doc) => TournamentMatch.fromFirestore(doc)).toList();
+    final verifiedGroupMatches = allMatches.where((m) => 
+      (m.isVerified || m.isCompleted) && 
+      (m.round == 'Group Stage' || (m.groupId != null && m.groupId!.isNotEmpty))
+    ).toList();
 
     for (var groupDoc in groupsQuery.docs) {
       final group = TournamentGroup.fromFirestore(groupDoc);
@@ -1100,7 +1190,10 @@ class DatabaseService {
       };
 
       // Filter matches belonging strictly to this group
-      final groupMatches = matches.where((m) => m.groupId == group.id).toList();
+      final groupMatches = verifiedGroupMatches.where((m) => 
+        m.groupId == group.id || 
+        (group.playerIds.contains(m.player1Id) && group.playerIds.contains(m.player2Id))
+      ).toList();
 
       for (var m in groupMatches) {
         final s1 = m.player1Score ?? 0;

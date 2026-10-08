@@ -1526,10 +1526,12 @@ class _GroupsTabState extends State<GroupsTab> with AutomaticKeepAliveClientMixi
                     OutlinedButton.icon(
                       onPressed: () async {
                         final messenger = ScaffoldMessenger.of(context);
-                        await DatabaseService().recalculateGroupStandings(widget.tournament.id);
+                        final fixed = await DatabaseService().auditAndFixGroupMatches(widget.tournament.id);
                         messenger.showSnackBar(
-                          const SnackBar(
-                            content: Text('RECALCULATED & AUDITED STANDINGS FOR ALL GROUPS!'),
+                          SnackBar(
+                            content: Text(fixed > 0 
+                                ? 'AUDITED GROUPS: RESTORED/FIXED $fixed MATCHES & RECALCULATED STANDINGS!' 
+                                : 'STANDINGS RECALCULATED & VERIFIED!'),
                             backgroundColor: AppTheme.accentGreen,
                           ),
                         );
