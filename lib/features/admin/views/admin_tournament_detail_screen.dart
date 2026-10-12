@@ -990,14 +990,15 @@ class _MatchesTabState extends State<MatchesTab> with AutomaticKeepAliveClientMi
                 ],
               ),
               const SizedBox(height: 16),
-              // PK Section
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.darkBackground,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white10),
-                ),
+              // PK Section (Knockout matches only)
+              if (match.round != 'Group Stage' && (match.groupId == null || match.groupId!.isEmpty))
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.darkBackground,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white10),
+                  ),
                 child: Column(
                   children: [
                     Text(

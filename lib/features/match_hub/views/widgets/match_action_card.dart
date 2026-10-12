@@ -374,15 +374,16 @@ class MatchActionCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Penalty shootout (PK) inputs if score is tied or knockout round
+                  // Penalty shootout (PK) inputs ONLY for tied Knockout matches
                   ValueListenableBuilder(
                     valueListenable: s1Controller,
                     builder: (context, _, __) {
                       final val1 = s1Controller.text.trim();
                       final val2 = s2Controller.text.trim();
                       final isTie = val1.isNotEmpty && val2.isNotEmpty && val1 == val2;
+                      final isKnockout = match.round != 'Group Stage' && (match.groupId == null || match.groupId!.isEmpty);
 
-                      if (!isTie) return const SizedBox.shrink();
+                      if (!isTie || !isKnockout) return const SizedBox.shrink();
 
                       return Container(
                         margin: const EdgeInsets.only(top: 8, bottom: 12),
