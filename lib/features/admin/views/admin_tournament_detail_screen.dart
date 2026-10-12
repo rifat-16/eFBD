@@ -886,6 +886,8 @@ class _MatchesTabState extends State<MatchesTab> with AutomaticKeepAliveClientMi
   void _showMatchVerificationDialog(TournamentMatch match) {
     final s1Controller = TextEditingController(text: (match.player1Score ?? 0).toString());
     final s2Controller = TextEditingController(text: (match.player2Score ?? 0).toString());
+    final pk1Controller = TextEditingController(text: match.p1PkScore != null ? match.p1PkScore.toString() : '');
+    final pk2Controller = TextEditingController(text: match.p2PkScore != null ? match.p2PkScore.toString() : '');
 
     showDialog(
       context: context,
@@ -987,6 +989,59 @@ class _MatchesTabState extends State<MatchesTab> with AutomaticKeepAliveClientMi
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+              // PK Section
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.darkBackground,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'PENALTY SHOOTOUT (PK) SCORES (OPTIONAL)',
+                      style: GoogleFonts.rajdhani(color: AppTheme.primaryGold, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: pk1Controller,
+                            keyboardType: TextInputType.number,
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.rajdhani(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                            decoration: InputDecoration(
+                              isDense: true,
+                              labelText: '${match.player1Ign} PK',
+                              labelStyle: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 11),
+                            ),
+                          ),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          child: Text('PK', style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold)),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: pk2Controller,
+                            keyboardType: TextInputType.number,
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.rajdhani(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                            decoration: InputDecoration(
+                              isDense: true,
+                              labelText: '${match.player2Ign} PK',
+                              labelStyle: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 11),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -1000,10 +1055,14 @@ class _MatchesTabState extends State<MatchesTab> with AutomaticKeepAliveClientMi
               final navigator = Navigator.of(context);
               final s1 = int.tryParse(s1Controller.text.trim()) ?? (match.player1Score ?? 0);
               final s2 = int.tryParse(s2Controller.text.trim()) ?? (match.player2Score ?? 0);
+              final pk1 = int.tryParse(pk1Controller.text.trim());
+              final pk2 = int.tryParse(pk2Controller.text.trim());
 
               final matchToVerify = match.copyWith(
                 player1Score: s1,
                 player2Score: s2,
+                p1PkScore: pk1,
+                p2PkScore: pk2,
               );
 
               await DatabaseService().verifyMatchResult(matchToVerify);

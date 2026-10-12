@@ -9,6 +9,8 @@ class TournamentMatch {
   final String player2Ign;
   final int? player1Score;
   final int? player2Score;
+  final int? p1PkScore;
+  final int? p2PkScore;
   final bool isCompleted;
   final DateTime timestamp;
   final DateTime? deadline;
@@ -17,7 +19,7 @@ class TournamentMatch {
   final bool isVerified;
   final String? resultSubmittedBy;
   final String? screenshotUrl;
-  final int bracketIndex; // Added for stable bracket ordering
+  final int bracketIndex;
 
   TournamentMatch({
     required this.id,
@@ -28,6 +30,8 @@ class TournamentMatch {
     required this.player2Ign,
     this.player1Score,
     this.player2Score,
+    this.p1PkScore,
+    this.p2PkScore,
     this.isCompleted = false,
     required this.timestamp,
     this.deadline,
@@ -50,6 +54,8 @@ class TournamentMatch {
       player2Ign: data['player2Ign'] ?? '',
       player1Score: data['player1Score'],
       player2Score: data['player2Score'],
+      p1PkScore: data['p1PkScore'],
+      p2PkScore: data['p2PkScore'],
       isCompleted: data['isCompleted'] ?? false,
       timestamp: data['timestamp'] != null 
           ? (data['timestamp'] as Timestamp).toDate() 
@@ -75,6 +81,8 @@ class TournamentMatch {
       'player2Ign': player2Ign,
       'player1Score': player1Score,
       'player2Score': player2Score,
+      'p1PkScore': p1PkScore,
+      'p2PkScore': p2PkScore,
       'isCompleted': isCompleted,
       'timestamp': Timestamp.fromDate(timestamp),
       'deadline': deadline != null ? Timestamp.fromDate(deadline!) : null,
@@ -96,6 +104,8 @@ class TournamentMatch {
     String? player2Ign,
     int? player1Score,
     int? player2Score,
+    int? p1PkScore,
+    int? p2PkScore,
     bool? isCompleted,
     DateTime? timestamp,
     DateTime? deadline,
@@ -115,6 +125,8 @@ class TournamentMatch {
       player2Ign: player2Ign ?? this.player2Ign,
       player1Score: player1Score ?? this.player1Score,
       player2Score: player2Score ?? this.player2Score,
+      p1PkScore: p1PkScore ?? this.p1PkScore,
+      p2PkScore: p2PkScore ?? this.p2PkScore,
       isCompleted: isCompleted ?? this.isCompleted,
       timestamp: timestamp ?? this.timestamp,
       deadline: deadline ?? this.deadline,

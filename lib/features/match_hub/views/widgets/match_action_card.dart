@@ -220,8 +220,10 @@ class MatchActionCard extends StatelessWidget {
               ? Column(
                   children: [
                     Text(
-                      '${match.player1Score ?? 0} - ${match.player2Score ?? 0}',
-                      style: GoogleFonts.rajdhani(fontSize: isMobile ? 22 : 26, fontWeight: FontWeight.bold, color: AppTheme.primaryGold, letterSpacing: 1),
+                      match.p1PkScore != null && match.p2PkScore != null
+                          ? '${match.player1Score ?? 0} - ${match.player2Score ?? 0} (${match.p1PkScore}-${match.p2PkScore} PK)'
+                          : '${match.player1Score ?? 0} - ${match.player2Score ?? 0}',
+                      style: GoogleFonts.rajdhani(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: AppTheme.primaryGold, letterSpacing: 1),
                     ),
                     if (match.isCompleted && !match.isVerified)
                       Container(
@@ -318,6 +320,12 @@ class MatchActionCard extends StatelessWidget {
     final s2Controller = TextEditingController(
       text: match.player2Score != null ? match.player2Score.toString() : '',
     );
+    final pk1Controller = TextEditingController(
+      text: match.p1PkScore != null ? match.p1PkScore.toString() : '',
+    );
+    final pk2Controller = TextEditingController(
+      text: match.p2PkScore != null ? match.p2PkScore.toString() : '',
+    );
     Uint8List? screenshotBytes;
     bool isUploading = false;
     final isMobile = ResponsiveHelper.isMobile(context);
@@ -365,7 +373,73 @@ class MatchActionCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
+                  // Penalty shootout (PK) inputs if score is tied or knockout round
+                  ValueListenableBuilder(
+                    valueListenable: s1Controller,
+                    builder: (context, _, __) {
+                      final val1 = s1Controller.text.trim();
+                      final val2 = s2Controller.text.trim();
+                      final isTie = val1.isNotEmpty && val2.isNotEmpty && val1 == val2;
+
+                      if (!isTie) return const SizedBox.shrink();
+
+                      return Container(
+                        margin: const EdgeInsets.only(top: 8, bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppTheme.darkBackground,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.3)),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'PENALTY SHOOTOUT (PK) SCORES',
+                              style: GoogleFonts.rajdhani(
+                                color: AppTheme.primaryGold,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                letterSpacing: 1.1,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: pk1Controller,
+                                    keyboardType: TextInputType.number,
+                                    style: GoogleFonts.poppins(color: Colors.white),
+                                    decoration: InputDecoration(
+                                      labelText: '${match.player1Ign} PK',
+                                      labelStyle: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 12),
+                                    ),
+                                  ),
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 8),
+                                  child: Text('PK', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                ),
+                                Expanded(
+                                  child: TextField(
+                                    controller: pk2Controller,
+                                    keyboardType: TextInputType.number,
+                                    style: GoogleFonts.poppins(color: Colors.white),
+                                    decoration: InputDecoration(
+                                      labelText: '${match.player2Ign} PK',
+                                      labelStyle: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 12),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
                   GestureDetector(
                     onTap: () async {
                       final picker = ImagePicker();
@@ -405,8 +479,10 @@ class MatchActionCard extends StatelessWidget {
                 child: Text('CANCEL', style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1))),
             ElevatedButton(
               onPressed: isUploading ? null : () async {
-                final s1 = int.tryParse(s1Controller.text);
-                final s2 = int.tryParse(s2Controller.text);
+                final s1 = int.tryParse(s1Controller.text.trim());
+                final s2 = int.tryParse(s2Controller.text.trim());
+                final pk1 = int.tryParse(pk1Controller.text.trim());
+                final pk2 = int.tryParse(pk2Controller.text.trim());
                 
                 if (s1 != null && s2 != null && screenshotBytes != null) {
                   setDialogState(() => isUploading = true);
@@ -423,6 +499,8 @@ class MatchActionCard extends StatelessWidget {
                     final updatedMatch = match.copyWith(
                       player1Score: s1,
                       player2Score: s2,
+                      p1PkScore: pk1,
+                      p2PkScore: pk2,
                       isCompleted: false, // Keep false until verified by admin
                       resultSubmittedBy: authProvider.playerProfile?.ign ?? 'Unknown',
                       screenshotUrl: screenshotUrl,

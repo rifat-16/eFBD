@@ -460,6 +460,8 @@ class DatabaseService {
       'isCompleted': true,
       'player1Score': s1,
       'player2Score': s2,
+      'p1PkScore': match.p1PkScore,
+      'p2PkScore': match.p2PkScore,
       'resultSubmittedBy': match.resultSubmittedBy,
     });
 
@@ -523,12 +525,24 @@ class DatabaseService {
     
     if (normalizedRound == 'final' || normalizedRound == '3rd place' || normalizedRound == 'qualifying round') return;
 
-    final winnerId = (match.player1Score ?? 0) > (match.player2Score ?? 0) 
-        ? match.player1Id 
-        : match.player2Id;
-    final winnerIgn = (match.player1Score ?? 0) > (match.player2Score ?? 0)
-        ? match.player1Ign
-        : match.player2Ign;
+    final s1 = match.player1Score ?? 0;
+    final s2 = match.player2Score ?? 0;
+    final pk1 = match.p1PkScore ?? 0;
+    final pk2 = match.p2PkScore ?? 0;
+
+    String winnerId;
+    String winnerIgn;
+
+    if (s1 != s2) {
+      winnerId = s1 > s2 ? match.player1Id : match.player2Id;
+      winnerIgn = s1 > s2 ? match.player1Ign : match.player2Ign;
+    } else if (pk1 != pk2) {
+      winnerId = pk1 > pk2 ? match.player1Id : match.player2Id;
+      winnerIgn = pk1 > pk2 ? match.player1Ign : match.player2Ign;
+    } else {
+      winnerId = match.player1Id;
+      winnerIgn = match.player1Ign;
+    }
 
     if (winnerId == 'BYE') return;
 
@@ -586,12 +600,15 @@ class DatabaseService {
 
     // Handle 3rd Place Match if this is Semi Finals
     if (normalizedRound == 'semi finals') {
-      final loserId = (match.player1Score ?? 0) > (match.player2Score ?? 0) 
-          ? match.player2Id 
-          : match.player1Id;
-      final loserIgn = (match.player1Score ?? 0) > (match.player2Score ?? 0)
-          ? match.player2Ign
-          : match.player1Ign;
+      String loserId;
+      String loserIgn;
+      if (s1 != s2) {
+        loserId = s1 > s2 ? match.player2Id : match.player1Id;
+        loserIgn = s1 > s2 ? match.player2Ign : match.player1Ign;
+      } else {
+        loserId = pk1 > pk2 ? match.player2Id : match.player1Id;
+        loserIgn = pk1 > pk2 ? match.player2Ign : match.player1Ign;
+      }
       
       if (loserId != 'BYE') {
         final thirdPlaceQuery = await _db.collection('matches')
