@@ -334,58 +334,58 @@ class MatchActionCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: AppTheme.cardBackground,
-          title: Text('SUBMIT MATCH SCORE', style: GoogleFonts.rajdhani(color: AppTheme.primaryGold, fontSize: isMobile ? 20 : 22, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-          content: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 450, maxHeight: size.height * 0.8),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Enter scores and upload the match result screenshot for verification.',
-                      style: GoogleFonts.poppins(color: AppTheme.textGrey, fontSize: 13)),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: s1Controller,
-                          keyboardType: TextInputType.number,
-                          style: GoogleFonts.poppins(color: Colors.white),
-                          decoration: InputDecoration(
-                              labelText: match.player1Ign.toUpperCase(), 
-                              labelStyle: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Text('-', style: GoogleFonts.rajdhani(fontSize: 28, color: Colors.white, fontWeight: FontWeight.bold)),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: TextField(
-                          controller: s2Controller,
-                          keyboardType: TextInputType.number,
-                          style: GoogleFonts.poppins(color: Colors.white),
-                          decoration: InputDecoration(
-                              labelText: match.player2Ign.toUpperCase(), 
-                              labelStyle: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // Penalty shootout (PK) inputs ONLY for tied Knockout matches
-                  ValueListenableBuilder(
-                    valueListenable: s1Controller,
-                    builder: (context, _, __) {
-                      final val1 = s1Controller.text.trim();
-                      final val2 = s2Controller.text.trim();
-                      final isTie = val1.isNotEmpty && val2.isNotEmpty && val1 == val2;
-                      final isKnockout = match.round != 'Group Stage' && (match.groupId == null || match.groupId!.isEmpty);
+        builder: (context, setDialogState) {
+          final val1 = s1Controller.text.trim();
+          final val2 = s2Controller.text.trim();
+          final isTie = val1.isNotEmpty && val2.isNotEmpty && val1 == val2;
+          final isKnockout = match.round != 'Group Stage' && (match.groupId == null || match.groupId!.isEmpty);
+          final showPkSection = isTie && isKnockout;
 
-                      if (!isTie || !isKnockout) return const SizedBox.shrink();
-
-                      return Container(
+          return AlertDialog(
+            backgroundColor: AppTheme.cardBackground,
+            title: Text('SUBMIT MATCH SCORE', style: GoogleFonts.rajdhani(color: AppTheme.primaryGold, fontSize: isMobile ? 20 : 22, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+            content: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 450, maxHeight: size.height * 0.8),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Enter scores and upload the match result screenshot for verification.',
+                        style: GoogleFonts.poppins(color: AppTheme.textGrey, fontSize: 13)),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: s1Controller,
+                            keyboardType: TextInputType.number,
+                            style: GoogleFonts.poppins(color: Colors.white),
+                            onChanged: (_) => setDialogState(() {}),
+                            decoration: InputDecoration(
+                                labelText: match.player1Ign.toUpperCase(), 
+                                labelStyle: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Text('-', style: GoogleFonts.rajdhani(fontSize: 28, color: Colors.white, fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: TextField(
+                            controller: s2Controller,
+                            keyboardType: TextInputType.number,
+                            style: GoogleFonts.poppins(color: Colors.white),
+                            onChanged: (_) => setDialogState(() {}),
+                            decoration: InputDecoration(
+                                labelText: match.player2Ign.toUpperCase(), 
+                                labelStyle: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Penalty shootout (PK) inputs ONLY for tied Knockout matches
+                    if (showPkSection)
+                      Container(
                         margin: const EdgeInsets.only(top: 8, bottom: 12),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -437,74 +437,107 @@ class MatchActionCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  GestureDetector(
-                    onTap: () async {
-                      final picker = ImagePicker();
-                      final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
-                      if (image != null) {
-                        final bytes = await image.readAsBytes();
-                        setDialogState(() => screenshotBytes = bytes);
-                      }
-                    },
-                    child: Container(
-                      height: 120,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: AppTheme.darkBackground,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.3)),
                       ),
-                      child: screenshotBytes != null
-                          ? Image.memory(screenshotBytes!, fit: BoxFit.cover)
-                          : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.add_a_photo, color: AppTheme.primaryGold),
-                                const SizedBox(height: 8),
-                                Text('UPLOAD SCREENSHOT', style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                              ],
-                            ),
+                    const SizedBox(height: 12),
+                    GestureDetector(
+                      onTap: () async {
+                        final picker = ImagePicker();
+                        final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+                        if (image != null) {
+                          final bytes = await image.readAsBytes();
+                          setDialogState(() => screenshotBytes = bytes);
+                        }
+                      },
+                      child: Container(
+                        height: 120,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: AppTheme.darkBackground,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.3)),
+                        ),
+                        child: screenshotBytes != null
+                            ? Image.memory(screenshotBytes!, fit: BoxFit.cover)
+                            : (match.screenshotUrl != null && match.screenshotUrl!.isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: WebSafeImage(
+                                      imageUrl: match.screenshotUrl!,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.add_a_photo, color: AppTheme.primaryGold),
+                                      const SizedBox(height: 8),
+                                      Text('UPLOAD SCREENSHOT', style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                                    ],
+                                  )),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('CANCEL', style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1))),
-            ElevatedButton(
-              onPressed: isUploading ? null : () async {
-                final s1 = int.tryParse(s1Controller.text.trim());
-                final s2 = int.tryParse(s2Controller.text.trim());
-                final pk1 = int.tryParse(pk1Controller.text.trim());
-                final pk2 = int.tryParse(pk2Controller.text.trim());
-                
-                if (s1 != null && s2 != null && screenshotBytes != null) {
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('CANCEL', style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1))),
+              ElevatedButton(
+                onPressed: isUploading ? null : () async {
+                  final s1 = int.tryParse(s1Controller.text.trim());
+                  final s2 = int.tryParse(s2Controller.text.trim());
+                  final pk1 = int.tryParse(pk1Controller.text.trim());
+                  final pk2 = int.tryParse(pk2Controller.text.trim());
+
+                  if (s1 == null || s2 == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please enter valid match scores!')),
+                    );
+                    return;
+                  }
+
+                  if (showPkSection && (pk1 == null || pk2 == null || pk1 == pk2)) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('For a tied knockout match, please enter valid, non-equal Penalty Shootout (PK) scores!'),
+                        backgroundColor: Colors.redAccent,
+                      ),
+                    );
+                    return;
+                  }
+
+                  final hasExistingScreenshot = match.screenshotUrl != null && match.screenshotUrl!.isNotEmpty;
+                  if (screenshotBytes == null && !hasExistingScreenshot) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please upload the match result screenshot!')),
+                    );
+                    return;
+                  }
+
                   setDialogState(() => isUploading = true);
                   final navigator = Navigator.of(context);
                   final authProvider = context.read<AuthProvider>();
                   try {
-                    // 1. Upload screenshot
-                    final screenshotUrl = await StorageService().uploadMatchScreenshot(
-                      matchId: match.id,
-                      fileBytes: screenshotBytes!,
-                    );
+                    // 1. Upload screenshot if a new one was picked, otherwise keep existing
+                    String finalScreenshotUrl = match.screenshotUrl ?? '';
+                    if (screenshotBytes != null) {
+                      finalScreenshotUrl = await StorageService().uploadMatchScreenshot(
+                        matchId: match.id,
+                        fileBytes: screenshotBytes!,
+                      );
+                    }
 
                     // 2. Update match document
                     final updatedMatch = match.copyWith(
                       player1Score: s1,
                       player2Score: s2,
-                      p1PkScore: pk1,
-                      p2PkScore: pk2,
+                      p1PkScore: showPkSection ? pk1 : null,
+                      p2PkScore: showPkSection ? pk2 : null,
                       isCompleted: false, // Keep false until verified by admin
                       resultSubmittedBy: authProvider.playerProfile?.ign ?? 'Unknown',
-                      screenshotUrl: screenshotUrl,
+                      screenshotUrl: finalScreenshotUrl,
                     );
 
                     await DatabaseService().updateMatchResult(updatedMatch);
@@ -514,14 +547,14 @@ class MatchActionCard extends StatelessWidget {
                   } finally {
                     setDialogState(() => isUploading = false);
                   }
-                }
-              },
-              child: isUploading 
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('SUBMIT FOR VERIFICATION'),
-            ),
-          ],
-        ),
+                },
+                child: isUploading 
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text('SUBMIT FOR VERIFICATION'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
