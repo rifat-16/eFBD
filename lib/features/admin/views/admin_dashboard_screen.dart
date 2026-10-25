@@ -1273,33 +1273,58 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 label: Text('VERIFY RESULT',
                     style: GoogleFonts.rajdhani(color: Colors.black, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
               )
-            else if (!match.isCompleted && match.deadline != null && match.deadline!.isBefore(DateTime.now()))
-              OutlinedButton.icon(
-                onPressed: () async {
-                  final messenger = ScaffoldMessenger.of(context);
-                  final expiredMatch = match.copyWith(
-                    player1Score: 0,
-                    player2Score: 0,
-                    isCompleted: true,
-                    isVerified: true,
-                  );
-                  await DatabaseService().verifyMatchResult(expiredMatch);
-                  messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Match resolved to 0-0 due to expired deadline.'),
-                      backgroundColor: AppTheme.accentGreen,
+            else if (!match.isCompleted)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () => _showVerificationDialog(match),
+                    icon: const Icon(Icons.edit, size: 16, color: Colors.black),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryGold),
+                    label: Text('SET RESULT',
+                        style: GoogleFonts.rajdhani(color: Colors.black, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                  ),
+                  if (match.deadline != null && match.deadline!.isBefore(DateTime.now())) ...[
+                    const SizedBox(width: 8),
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        final expiredMatch = match.copyWith(
+                          player1Score: 0,
+                          player2Score: 0,
+                          isCompleted: true,
+                          isVerified: true,
+                        );
+                        await DatabaseService().verifyMatchResult(expiredMatch);
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Match resolved to 0-0 due to expired deadline.'),
+                            backgroundColor: AppTheme.accentGreen,
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.timer_off, size: 14, color: Colors.orangeAccent),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.orangeAccent,
+                        side: const BorderSide(color: Colors.orangeAccent),
+                      ),
+                      label: const Text('0-0 EXPIRED', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.timer_off, size: 14, color: Colors.orangeAccent),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.orangeAccent,
-                  side: const BorderSide(color: Colors.orangeAccent),
-                ),
-                label: const Text('0-0 EXPIRED', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                  ],
+                ],
               )
             else if (match.isVerified)
-              const Icon(Icons.verified, color: AppTheme.accentGreen)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () => _showVerificationDialog(match),
+                    icon: const Icon(Icons.edit, color: AppTheme.primaryGold, size: 20),
+                    tooltip: 'Edit Result',
+                  ),
+                  const Icon(Icons.verified, color: AppTheme.accentGreen),
+                ],
+              )
             else
               const Icon(Icons.hourglass_empty, color: AppTheme.textGrey),
           ],

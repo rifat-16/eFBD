@@ -1496,39 +1496,66 @@ class _MatchCard extends StatelessWidget {
                 label: const Text('VERIFY RESULT', style: TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.bold)),
               ),
             )
-          else if (!match.isCompleted && match.deadline != null && match.deadline!.isBefore(DateTime.now()))
+          else if (!match.isCompleted)
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
-              child: OutlinedButton.icon(
-                onPressed: () async {
-                  final messenger = ScaffoldMessenger.of(context);
-                  final expiredMatch = match.copyWith(
-                    player1Score: 0,
-                    player2Score: 0,
-                    isCompleted: true,
-                    isVerified: true,
-                  );
-                  await DatabaseService().verifyMatchResult(expiredMatch);
-                  messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Match resolved to 0-0 due to expired deadline.'),
-                      backgroundColor: AppTheme.accentGreen,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () => _showMatchVerificationDialog(context, match),
+                    icon: const Icon(Icons.edit, size: 14, color: Colors.black),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryGold,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.timer_off, size: 14, color: Colors.orangeAccent),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.orangeAccent,
-                  side: const BorderSide(color: Colors.orangeAccent),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                ),
-                label: const Text('0-0 EXPIRED', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                    label: const Text('SET RESULT', style: TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.bold)),
+                  ),
+                  if (match.deadline != null && match.deadline!.isBefore(DateTime.now())) ...[
+                    const SizedBox(width: 6),
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        final expiredMatch = match.copyWith(
+                          player1Score: 0,
+                          player2Score: 0,
+                          isCompleted: true,
+                          isVerified: true,
+                        );
+                        await DatabaseService().verifyMatchResult(expiredMatch);
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Match resolved to 0-0 due to expired deadline.'),
+                            backgroundColor: AppTheme.accentGreen,
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.timer_off, size: 14, color: Colors.orangeAccent),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.orangeAccent,
+                        side: const BorderSide(color: Colors.orangeAccent),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      ),
+                      label: const Text('0-0 EXPIRED', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ],
               ),
             )
           else if (match.isVerified)
-            const Padding(
-              padding: EdgeInsets.only(left: 8.0),
-              child: Icon(Icons.verified, color: AppTheme.accentGreen, size: 20),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () => _showMatchVerificationDialog(context, match),
+                    icon: const Icon(Icons.edit, color: AppTheme.primaryGold, size: 18),
+                    tooltip: 'Edit Result',
+                  ),
+                  const Icon(Icons.verified, color: AppTheme.accentGreen, size: 20),
+                ],
+              ),
             )
         ],
       ),
