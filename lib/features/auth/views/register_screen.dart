@@ -21,6 +21,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _whatsappController = TextEditingController();
   final _efootballUidController = TextEditingController();
   final _scrollController = ScrollController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -152,12 +153,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               const SizedBox(height: 20),
                               TextFormField(
                                 controller: _passwordController,
-                                obscureText: true,
+                                obscureText: _obscurePassword,
                                 style: const TextStyle(color: Colors.white),
                                 autovalidateMode: AutovalidateMode.onUserInteraction,
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   labelText: 'Password',
-                                  prefixIcon: Icon(Icons.lock_outline),
+                                  prefixIcon: const Icon(Icons.lock_outline),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                  ),
                                 ),
                                 validator: (v) => v == null || v.trim().length < 6 ? 'Password must be at least 6 characters' : null,
                               ),
