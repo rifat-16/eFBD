@@ -352,41 +352,6 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     return entries;
   }
 
-  Widget _buildMatchPlayer(String ign, String? playerId, bool isLeft) {
-    return Column(
-      children: [
-        if (playerId != null && playerId != 'BYE')
-          StreamBuilder<Player?>(
-            stream: DatabaseService().getPlayerStream(playerId),
-            builder: (context, snapshot) {
-              final player = snapshot.data;
-              return Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.05),
-                ),
-                child: ClipOval(
-                  child: (player?.profileImageUrl != null && player!.profileImageUrl!.trim().isNotEmpty)
-                      ? WebSafeImage(
-                          imageUrl: player!.profileImageUrl!,
-                          fit: BoxFit.cover,
-                          fallbackWidget: const Icon(Icons.person, size: 30, color: AppTheme.textGrey),
-                        )
-                      : const Icon(Icons.person, size: 30, color: AppTheme.textGrey),
-                ),
-              );
-            },
-          )
-        else
-          const CircleAvatar(radius: 30, child: Icon(Icons.person, size: 30)),
-        const SizedBox(height: 12),
-        Text(ign, style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 0.5)),
-      ],
-    );
-  }
-
   void _showSubmitScoreDialog(TournamentMatch match) {
     final p1Controller = TextEditingController();
     final p2Controller = TextEditingController();
