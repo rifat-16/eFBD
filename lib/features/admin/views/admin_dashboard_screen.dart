@@ -1,5 +1,3 @@
-import 'dart:math';
-import 'package:url_launcher/url_launcher.dart';
 import 'admin_profile_requests_view.dart';
 import '../../tournament/models/registration_model.dart';
 import '../../tournament/models/tournament_model.dart';
