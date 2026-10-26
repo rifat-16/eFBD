@@ -29,7 +29,7 @@ class LeaderboardProvider with ChangeNotifier {
     // All-time Players Stream
     _dbService.getPlayersStream(limit: 100).listen(
       (data) {
-        _players = _sortPlayers(data);
+        _players = sortPlayers(data);
         _isLoading = false;
         notifyListeners();
       },
@@ -43,7 +43,7 @@ class LeaderboardProvider with ChangeNotifier {
     // Monthly Players Stream
     _dbService.getPlayersStream(limit: 100).listen(
       (data) {
-        _monthlyPlayers = _sortPlayers(data, isMonthly: true);
+        _monthlyPlayers = sortPlayers(data, isMonthly: true);
         _isMonthlyLoading = false;
         notifyListeners();
       },
@@ -67,7 +67,7 @@ class LeaderboardProvider with ChangeNotifier {
 
     try {
       final data = await _dbService.getPlayers(limit: 100);
-      _players = _sortPlayers(data);
+      _players = sortPlayers(data);
     } catch (error) {
       debugPrint('Leaderboard Error: $error');
       _players = [];
@@ -83,7 +83,7 @@ class LeaderboardProvider with ChangeNotifier {
 
     try {
       final data = await _dbService.getPlayers(limit: 100);
-      _monthlyPlayers = _sortPlayers(data, isMonthly: true);
+      _monthlyPlayers = sortPlayers(data, isMonthly: true);
     } catch (error) {
       debugPrint('Monthly Leaderboard Error: $error');
       _monthlyPlayers = [];
@@ -93,7 +93,8 @@ class LeaderboardProvider with ChangeNotifier {
     }
   }
 
-  List<Player> _sortPlayers(List<Player> data, {bool isMonthly = false}) {
+  @visibleForTesting
+  static List<Player> sortPlayers(List<Player> data, {bool isMonthly = false}) {
     final List<Player> sortedData = List<Player>.from(data);
     if (sortedData.isNotEmpty) {
       // Apply ranking algorithm

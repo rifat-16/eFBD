@@ -50,7 +50,6 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   }
 
   Widget _buildInfoTab(Tournament tournament) {
-    final isMobile = ResponsiveHelper.isMobile(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -711,10 +710,6 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     );
   }
 
-  Widget _buildMatchHistory(Tournament tournament) {
-    return _MatchHistoryTab(tournamentId: tournament.id);
-  }
-
   Future<void> _launchWhatsApp(String? url) async {
     if (url == null || url.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -921,10 +916,6 @@ class _MatchHistoryTabState extends State<_MatchHistoryTab> {
         );
       },
     );
-  }
-
-  Widget _buildPlayersList(Tournament tournament) {
-    return _PlayersListTab(tournamentId: tournament.id);
   }
 }
 

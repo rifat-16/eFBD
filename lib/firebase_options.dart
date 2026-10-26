@@ -69,6 +69,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '483811394988',
     projectId: 'efootballersbd',
     storageBucket: 'efootballersbd.firebasestorage.app',
-    iosBundleId: 'com.example.efbd',
+    iosBundleId: 'com.efootballersbd.app',
   );
 }
