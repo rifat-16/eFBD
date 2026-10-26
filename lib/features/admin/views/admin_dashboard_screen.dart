@@ -1,5 +1,3 @@
-import 'dart:math';
-import 'package:url_launcher/url_launcher.dart';
 import 'admin_profile_requests_view.dart';
 import '../../tournament/models/registration_model.dart';
 import '../../tournament/models/tournament_model.dart';
@@ -23,7 +21,14 @@ import 'package:efbd/core/widgets/web_safe_image.dart';
 import 'package:efbd/core/widgets/full_screen_image_viewer.dart';
 import '../../../core/models/community_config.dart';
 
-enum AdminView { dashboard, tournaments, matches, players, profileRequests, community }
+enum AdminView {
+  dashboard,
+  tournaments,
+  matches,
+  players,
+  profileRequests,
+  community,
+}
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -74,32 +79,54 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-                  _buildSidebarItem(Icons.dashboard, 'Dashboard', _currentView == AdminView.dashboard,
-                      () => setState(() => _currentView = AdminView.dashboard)),
-                  _buildSidebarItem(Icons.emoji_events, 'Tournaments', _currentView == AdminView.tournaments,
-                      () => setState(() => _currentView = AdminView.tournaments)),
-                  _buildSidebarItem(Icons.sports_esports, 'Matches', _currentView == AdminView.matches,
-                      () => setState(() => _currentView = AdminView.matches)),
-                  _buildSidebarItem(Icons.people, 'Players', _currentView == AdminView.players,
-                      () => setState(() => _currentView = AdminView.players)),
-                  _buildSidebarItem(Icons.archive, 'Season Control', _currentView == AdminView.dashboard,
-                      () => _showSeasonControlDialog(context)),
+                  _buildSidebarItem(
+                    Icons.dashboard,
+                    'Dashboard',
+                    _currentView == AdminView.dashboard,
+                    () => setState(() => _currentView = AdminView.dashboard),
+                  ),
+                  _buildSidebarItem(
+                    Icons.emoji_events,
+                    'Tournaments',
+                    _currentView == AdminView.tournaments,
+                    () => setState(() => _currentView = AdminView.tournaments),
+                  ),
+                  _buildSidebarItem(
+                    Icons.sports_esports,
+                    'Matches',
+                    _currentView == AdminView.matches,
+                    () => setState(() => _currentView = AdminView.matches),
+                  ),
+                  _buildSidebarItem(
+                    Icons.people,
+                    'Players',
+                    _currentView == AdminView.players,
+                    () => setState(() => _currentView = AdminView.players),
+                  ),
+                  _buildSidebarItem(
+                    Icons.archive,
+                    'Season Control',
+                    _currentView == AdminView.dashboard,
+                    () => _showSeasonControlDialog(context),
+                  ),
                   StreamBuilder<List<Map<String, dynamic>>>(
                     stream: DatabaseService().getProfileUpdateRequests(),
                     builder: (context, snapshot) {
                       final count = snapshot.data?.length ?? 0;
                       return _buildSidebarItem(
-                        Icons.notification_important, 
-                        'Profile Updates', 
+                        Icons.notification_important,
+                        'Profile Updates',
                         _currentView == AdminView.profileRequests,
-                        () => setState(() => _currentView = AdminView.profileRequests),
+                        () => setState(
+                          () => _currentView = AdminView.profileRequests,
+                        ),
                         badgeCount: count > 0 ? count : null,
                       );
-                    }
+                    },
                   ),
                   _buildSidebarItem(
-                    Icons.public, 
-                    'Community Links', 
+                    Icons.public,
+                    'Community Links',
                     _currentView == AdminView.community,
                     () => setState(() => _currentView = AdminView.community),
                   ),
@@ -114,9 +141,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
           // Main Content
-          Expanded(
-            child: _buildMainContent(),
-          ),
+          Expanded(child: _buildMainContent()),
         ],
       ),
     );
@@ -141,38 +166,53 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
           ),
-          _buildSidebarItem(Icons.dashboard, 'Dashboard', _currentView == AdminView.dashboard,
-              () {
-                setState(() => _currentView = AdminView.dashboard);
-                Navigator.pop(context);
-              }),
-          _buildSidebarItem(Icons.emoji_events, 'Tournaments', _currentView == AdminView.tournaments,
-              () {
-                setState(() => _currentView = AdminView.tournaments);
-                Navigator.pop(context);
-              }),
-          _buildSidebarItem(Icons.sports_esports, 'Matches', _currentView == AdminView.matches,
-              () {
-                setState(() => _currentView = AdminView.matches);
-                Navigator.pop(context);
-              }),
-          _buildSidebarItem(Icons.people, 'Players', _currentView == AdminView.players,
-              () {
-                setState(() => _currentView = AdminView.players);
-                Navigator.pop(context);
-              }),
-          _buildSidebarItem(Icons.archive, 'Season Control', false,
-              () {
-                Navigator.pop(context);
-                _showSeasonControlDialog(context);
-              }),
+          _buildSidebarItem(
+            Icons.dashboard,
+            'Dashboard',
+            _currentView == AdminView.dashboard,
+            () {
+              setState(() => _currentView = AdminView.dashboard);
+              Navigator.pop(context);
+            },
+          ),
+          _buildSidebarItem(
+            Icons.emoji_events,
+            'Tournaments',
+            _currentView == AdminView.tournaments,
+            () {
+              setState(() => _currentView = AdminView.tournaments);
+              Navigator.pop(context);
+            },
+          ),
+          _buildSidebarItem(
+            Icons.sports_esports,
+            'Matches',
+            _currentView == AdminView.matches,
+            () {
+              setState(() => _currentView = AdminView.matches);
+              Navigator.pop(context);
+            },
+          ),
+          _buildSidebarItem(
+            Icons.people,
+            'Players',
+            _currentView == AdminView.players,
+            () {
+              setState(() => _currentView = AdminView.players);
+              Navigator.pop(context);
+            },
+          ),
+          _buildSidebarItem(Icons.archive, 'Season Control', false, () {
+            Navigator.pop(context);
+            _showSeasonControlDialog(context);
+          }),
           StreamBuilder<List<Map<String, dynamic>>>(
             stream: DatabaseService().getProfileUpdateRequests(),
             builder: (context, snapshot) {
               final count = snapshot.data?.length ?? 0;
               return _buildSidebarItem(
-                Icons.notification_important, 
-                'Profile Updates', 
+                Icons.notification_important,
+                'Profile Updates',
                 _currentView == AdminView.profileRequests,
                 () {
                   setState(() => _currentView = AdminView.profileRequests);
@@ -180,11 +220,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 },
                 badgeCount: count > 0 ? count : null,
               );
-            }
+            },
           ),
           _buildSidebarItem(
-            Icons.public, 
-            'Community Links', 
+            Icons.public,
+            'Community Links',
             _currentView == AdminView.community,
             () {
               setState(() => _currentView = AdminView.community);
@@ -220,53 +260,61 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          isMobile 
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'TOURNAMENT MANAGEMENT',
-                    style: GoogleFonts.rajdhani(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryGold,
-                      letterSpacing: 1.5,
+          isMobile
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TOURNAMENT MANAGEMENT',
+                      style: GoogleFonts.rajdhani(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryGold,
+                        letterSpacing: 1.5,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () => _showCreateTournament(context),
-                    icon: const Icon(Icons.add),
-                    label: Text(
-                      'NEW TOURNAMENT',
-                      style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: () => _showCreateTournament(context),
+                      icon: const Icon(Icons.add),
+                      label: Text(
+                        'NEW TOURNAMENT',
+                        style: GoogleFonts.rajdhani(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 45),
+                      ),
                     ),
-                    style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 45)),
-                  ),
-                ],
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'TOURNAMENT MANAGEMENT',
-                    style: GoogleFonts.rajdhani(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryGold,
-                      letterSpacing: 1.5,
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'TOURNAMENT MANAGEMENT',
+                      style: GoogleFonts.rajdhani(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryGold,
+                        letterSpacing: 1.5,
+                      ),
                     ),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () => _showCreateTournament(context),
-                    icon: const Icon(Icons.add),
-                    label: Text(
-                      'NEW TOURNAMENT',
-                      style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                    ElevatedButton.icon(
+                      onPressed: () => _showCreateTournament(context),
+                      icon: const Icon(Icons.add),
+                      label: Text(
+                        'NEW TOURNAMENT',
+                        style: GoogleFonts.rajdhani(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
           const SizedBox(height: 32),
           StreamBuilder<List<Tournament>>(
             stream: DatabaseService().getTournaments(),
@@ -279,7 +327,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 child: Wrap(
                   spacing: 16,
                   runSpacing: 16,
-                  children: tournaments.map((t) => _buildAdminTournamentCard(t)).toList(),
+                  children: tournaments
+                      .map((t) => _buildAdminTournamentCard(t))
+                      .toList(),
                 ),
               );
             },
@@ -294,11 +344,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       stream: DatabaseService().getRegistrations(t.id),
       builder: (context, snapshot) {
         final regs = snapshot.data ?? [];
-        final pendingCount = regs.where((r) => r.status == RegistrationStatus.pending).length;
-        
+        final pendingCount = regs
+            .where((r) => r.status == RegistrationStatus.pending)
+            .length;
+
         Color statusColor = AppTheme.primaryGold;
-        if (t.status == TournamentStatus.ongoing) statusColor = AppTheme.accentBlue;
-        if (t.status == TournamentStatus.completed) statusColor = AppTheme.accentGreen;
+        if (t.status == TournamentStatus.ongoing)
+          statusColor = AppTheme.accentBlue;
+        if (t.status == TournamentStatus.completed)
+          statusColor = AppTheme.accentGreen;
 
         return InkWell(
           onTap: () => context.push('/admin/tournaments/${t.id}'),
@@ -318,48 +372,84 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: statusColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: statusColor.withValues(alpha: 0.2)),
+                        border: Border.all(
+                          color: statusColor.withValues(alpha: 0.2),
+                        ),
                       ),
-                      child: Text(t.status.name.toUpperCase(),
-                          style: GoogleFonts.rajdhani(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                      child: Text(
+                        t.status.name.toUpperCase(),
+                        style: GoogleFonts.rajdhani(
+                          color: statusColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
                     ),
                     if (pendingCount > 0)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.red,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Text('$pendingCount PENDING',
-                            style: GoogleFonts.rajdhani(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                        child: Text(
+                          '$pendingCount PENDING',
+                          style: GoogleFonts.rajdhani(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.1,
+                          ),
+                        ),
                       ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                Text(t.title,
-                    style: GoogleFonts.rajdhani(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      letterSpacing: 1.2,
-                    )),
+                Text(
+                  t.title,
+                  style: GoogleFonts.rajdhani(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    letterSpacing: 1.2,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                Text('${t.registeredPlayers.length} / ${t.maxPlayers} Players Registered',
-                    style: GoogleFonts.poppins(color: AppTheme.textGrey, fontSize: 12)),
+                Text(
+                  '${t.registeredPlayers.length} / ${t.maxPlayers} Players Registered',
+                  style: GoogleFonts.poppins(
+                    color: AppTheme.textGrey,
+                    fontSize: 12,
+                  ),
+                ),
                 const SizedBox(height: 20),
                 Row(
                   children: [
-                    const Icon(Icons.arrow_forward, size: 16, color: AppTheme.primaryGold),
+                    const Icon(
+                      Icons.arrow_forward,
+                      size: 16,
+                      color: AppTheme.primaryGold,
+                    ),
                     const SizedBox(width: 8),
-                    Text('MANAGE TOURNAMENT',
-                        style: GoogleFonts.rajdhani(
-                            fontSize: 14,
-                            color: AppTheme.primaryGold,
-                            letterSpacing: 1.5,
-                            fontWeight: FontWeight.bold)),
+                    Text(
+                      'MANAGE TOURNAMENT',
+                      style: GoogleFonts.rajdhani(
+                        fontSize: 14,
+                        color: AppTheme.primaryGold,
+                        letterSpacing: 1.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -370,12 +460,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-
-
   Future<void> _seedPlayers() async {
     final db = FirebaseFirestore.instance;
     final batch = db.batch();
-    
+
     for (int i = 1; i <= 64; i++) {
       final docRef = db.collection('players').doc('test_player_$i');
       batch.set(docRef, {
@@ -414,7 +502,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             backgroundColor: AppTheme.accentGreen,
             content: Text(
               'SUCCESSFULLY SEEDED 64 TEST PLAYERS!',
-              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         );
@@ -426,7 +517,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             backgroundColor: Colors.redAccent,
             content: Text(
               'ERROR SEEDING PLAYERS: ${e.toString().toUpperCase()}',
-              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         );
@@ -438,7 +532,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final db = FirebaseFirestore.instance;
     final playersStream = DatabaseService().getPlayersStream();
     final players = await playersStream.first;
-    
+
     // We want at least 64 for a good "Knockout to Groups" test
     int testSize = 64;
     if (players.length < testSize) {
@@ -448,7 +542,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             backgroundColor: Colors.redAccent,
             content: Text(
               'NEED AT LEAST $testSize PLAYERS IN DB. FOUND ${players.length}.',
-              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         );
@@ -476,7 +573,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
     // 2. Create Verified Registrations
     for (final player in players.take(testSize)) {
-      final regRef = db.collection('registrations').doc('${tournamentId}_${player.id}');
+      final regRef = db
+          .collection('registrations')
+          .doc('${tournamentId}_${player.id}');
       batch.set(regRef, {
         'tournamentId': tournamentId,
         'playerId': player.id,
@@ -499,56 +598,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           backgroundColor: AppTheme.accentGreen,
           content: Text(
             'TEST TOURNAMENT CREATED WITH $testSize PLAYERS!',
-            style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       );
       setState(() {
         _selectedTournamentId = tournamentId;
       });
-    }
-  }
-
-  Future<void> _quickVerifyMatches() async {
-    if (_selectedTournamentId.isEmpty) return;
-
-    final matchesStream = DatabaseService().getMatches(_selectedTournamentId);
-    final matches = await matchesStream.first;
-    final db = DatabaseService();
-    final random = Random();
-    int count = 0;
-
-    for (var match in matches) {
-      if (!match.isVerified) {
-        int score1 = random.nextInt(5);
-        int score2 = random.nextInt(5);
-
-        // Ensure no draws for testing knockout progression
-        while (score1 == score2) {
-          score2 = random.nextInt(5);
-        }
-
-        final updatedMatch = match.copyWith(
-          player1Score: score1,
-          player2Score: score2,
-          isCompleted: true,
-          resultSubmittedBy: 'AUTO_TEST',
-        );
-        await db.verifyMatchResult(updatedMatch);
-        count++;
-      }
-    }
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: AppTheme.accentGreen,
-          content: Text(
-            'VERIFIED $count MATCHES WITH RANDOM SCORES!',
-            style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
-          ),
-        ),
-      );
     }
   }
 
@@ -581,100 +640,226 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 decoration: BoxDecoration(
                   color: AppTheme.cardBackground,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.05),
+                  ),
                 ),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: DataTable(
-                    headingRowColor: WidgetStateProperty.all(AppTheme.primaryGold.withValues(alpha: 0.05)),
+                    headingRowColor: WidgetStateProperty.all(
+                      AppTheme.primaryGold.withValues(alpha: 0.05),
+                    ),
                     columns: [
                       DataColumn(
-                          label: Text('REAL NAME',
-                              style: GoogleFonts.rajdhani(
-                                  fontWeight: FontWeight.bold, color: AppTheme.primaryGold, letterSpacing: 1.2))),
-                      DataColumn(
-                          label: Text('IGN',
-                              style: GoogleFonts.rajdhani(
-                                  fontWeight: FontWeight.bold, color: AppTheme.primaryGold, letterSpacing: 1.2))),
-                      DataColumn(
-                          label: Text('EMAIL',
-                              style: GoogleFonts.rajdhani(
-                                  fontWeight: FontWeight.bold, color: AppTheme.primaryGold, letterSpacing: 1.2))),
-                      DataColumn(
-                          label: Text('UID',
-                              style: GoogleFonts.rajdhani(
-                                  fontWeight: FontWeight.bold, color: AppTheme.primaryGold, letterSpacing: 1.2))),
-                      DataColumn(
-                          label: Text('WHATSAPP',
-                              style: GoogleFonts.rajdhani(
-                                  fontWeight: FontWeight.bold, color: AppTheme.primaryGold, letterSpacing: 1.2))),
-                      DataColumn(
-                          label: Text('PTS',
-                              style: GoogleFonts.rajdhani(
-                                  fontWeight: FontWeight.bold, color: AppTheme.primaryGold, letterSpacing: 1.2))),
-                      DataColumn(
-                          label: Text('ACHIEVEMENTS',
-                              style: GoogleFonts.rajdhani(
-                                  fontWeight: FontWeight.bold, color: AppTheme.primaryGold, letterSpacing: 1.2))),
-                      DataColumn(
-                          label: Text('ACTIONS',
-                              style: GoogleFonts.rajdhani(
-                                  fontWeight: FontWeight.bold, color: AppTheme.primaryGold, letterSpacing: 1.2))),
-                    ],
-                    rows: players.map((p) => DataRow(cells: [
-                          DataCell(Text(p.name, style: GoogleFonts.poppins(fontSize: 13))),
-                          DataCell(Text(p.ign, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.primaryGold))),
-                          DataCell(Text(p.email, style: GoogleFonts.poppins(fontSize: 13))),
-                          DataCell(Text(p.uid, style: GoogleFonts.poppins(fontSize: 13))),
-                          DataCell(
-                            InkWell(
-                              onTap: () {
-                                if (p.whatsapp != null && p.whatsapp!.isNotEmpty) {
-                                  final formatted = WhatsappHelper.formatNumber(p.whatsapp!);
-                                  Clipboard.setData(ClipboardData(text: formatted));
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('WhatsApp number copied: $formatted'),
-                                      duration: const Duration(seconds: 2),
-                                      backgroundColor: AppTheme.accentGreen,
-                                    ),
-                                  );
-                                }
-                              },
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    p.whatsapp != null && p.whatsapp!.isNotEmpty
-                                        ? WhatsappHelper.formatNumber(p.whatsapp!)
-                                        : '-',
-                                    style: GoogleFonts.poppins(fontSize: 13),
-                                  ),
-                                  if (p.whatsapp != null && p.whatsapp!.isNotEmpty) ...[
-                                    const SizedBox(width: 4),
-                                    const Icon(Icons.copy_rounded, size: 14, color: AppTheme.primaryGold),
-                                  ],
-                                ],
-                              ),
-                            ),
+                        label: Text(
+                          'REAL NAME',
+                          style: GoogleFonts.rajdhani(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryGold,
+                            letterSpacing: 1.2,
                           ),
-                          DataCell(Text(p.totalPoints.toString(), style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, fontSize: 15))),
-                          DataCell(Text('${p.champions}🏆 ${p.runnersUp}🥈', style: GoogleFonts.poppins(fontSize: 13))),
-                          DataCell(Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.visibility, size: 18),
-                                onPressed: () => _showPlayerDetails(context, p),
-                                tooltip: 'View Profile',
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'IGN',
+                          style: GoogleFonts.rajdhani(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryGold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'EMAIL',
+                          style: GoogleFonts.rajdhani(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryGold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'UID',
+                          style: GoogleFonts.rajdhani(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryGold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'WHATSAPP',
+                          style: GoogleFonts.rajdhani(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryGold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'PTS',
+                          style: GoogleFonts.rajdhani(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryGold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'ACHIEVEMENTS',
+                          style: GoogleFonts.rajdhani(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryGold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'ACTIONS',
+                          style: GoogleFonts.rajdhani(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryGold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                    ],
+                    rows: players
+                        .map(
+                          (p) => DataRow(
+                            cells: [
+                              DataCell(
+                                Text(
+                                  p.name,
+                                  style: GoogleFonts.poppins(fontSize: 13),
+                                ),
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.military_tech, size: 18, color: AppTheme.primaryGold),
-                                onPressed: () => _showAwardTrophyDialog(p),
-                                tooltip: 'Award Trophy',
+                              DataCell(
+                                Text(
+                                  p.ign,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.primaryGold,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  p.email,
+                                  style: GoogleFonts.poppins(fontSize: 13),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  p.uid,
+                                  style: GoogleFonts.poppins(fontSize: 13),
+                                ),
+                              ),
+                              DataCell(
+                                InkWell(
+                                  onTap: () {
+                                    if (p.whatsapp != null &&
+                                        p.whatsapp!.isNotEmpty) {
+                                      final formatted =
+                                          WhatsappHelper.formatNumber(
+                                            p.whatsapp!,
+                                          );
+                                      Clipboard.setData(
+                                        ClipboardData(text: formatted),
+                                      );
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'WhatsApp number copied: $formatted',
+                                          ),
+                                          duration: const Duration(seconds: 2),
+                                          backgroundColor: AppTheme.accentGreen,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        p.whatsapp != null &&
+                                                p.whatsapp!.isNotEmpty
+                                            ? WhatsappHelper.formatNumber(
+                                                p.whatsapp!,
+                                              )
+                                            : '-',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                      if (p.whatsapp != null &&
+                                          p.whatsapp!.isNotEmpty) ...[
+                                        const SizedBox(width: 4),
+                                        const Icon(
+                                          Icons.copy_rounded,
+                                          size: 14,
+                                          color: AppTheme.primaryGold,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  p.totalPoints.toString(),
+                                  style: GoogleFonts.rajdhani(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  '${p.champions}🏆 ${p.runnersUp}🥈',
+                                  style: GoogleFonts.poppins(fontSize: 13),
+                                ),
+                              ),
+                              DataCell(
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.visibility,
+                                        size: 18,
+                                      ),
+                                      onPressed: () =>
+                                          _showPlayerDetails(context, p),
+                                      tooltip: 'View Profile',
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.military_tech,
+                                        size: 18,
+                                        color: AppTheme.primaryGold,
+                                      ),
+                                      onPressed: () =>
+                                          _showAwardTrophyDialog(p),
+                                      tooltip: 'Award Trophy',
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
-                          )),
-                        ])).toList(),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
               );
@@ -723,7 +908,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 controller: titleController,
                 decoration: InputDecoration(
                   labelText: 'Trophy Title (e.g. MVP)',
-                  labelStyle: GoogleFonts.rajdhani(fontWeight: FontWeight.w600, letterSpacing: 1.1),
+                  labelStyle: GoogleFonts.rajdhani(
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.1,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -731,7 +919,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 controller: descController,
                 decoration: InputDecoration(
                   labelText: 'Description (e.g. Season 1)',
-                  labelStyle: GoogleFonts.rajdhani(fontWeight: FontWeight.w600, letterSpacing: 1.1),
+                  labelStyle: GoogleFonts.rajdhani(
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.1,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -739,7 +930,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 value: selectedTier,
                 decoration: InputDecoration(
                   labelText: 'Tier',
-                  labelStyle: GoogleFonts.rajdhani(fontWeight: FontWeight.w600, letterSpacing: 1.1),
+                  labelStyle: GoogleFonts.rajdhani(
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.1,
+                  ),
                 ),
                 items: TrophyTier.values.map((tier) {
                   return DropdownMenuItem(
@@ -759,7 +953,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'CANCEL',
-                style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                style: GoogleFonts.rajdhani(
+                  color: AppTheme.textGrey,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
               ),
             ),
             ElevatedButton(
@@ -779,7 +977,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       SnackBar(
                         content: Text(
                           'TROPHY AWARDED TO ${player.ign.toUpperCase()}!',
-                          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         backgroundColor: AppTheme.accentGreen,
                       ),
@@ -789,7 +990,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               },
               child: Text(
                 'AWARD',
-                style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                style: GoogleFonts.rajdhani(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
               ),
             ),
           ],
@@ -820,7 +1024,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               'CANCEL',
-              style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+              style: GoogleFonts.rajdhani(
+                color: AppTheme.textGrey,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
             ),
           ),
           ElevatedButton(
@@ -831,7 +1039,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: Text(
               'CLOSE SEASON & RESET STATS',
-              style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, letterSpacing: 1.2),
+              style: GoogleFonts.rajdhani(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
             ),
           ),
         ],
@@ -844,7 +1055,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator(color: AppTheme.primaryGold)),
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryGold),
+      ),
     );
 
     try {
@@ -859,8 +1072,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       final now = DateTime.now();
       // Month names
       const months = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
       ];
       final monthName = months[now.month - 1];
       final year = now.year;
@@ -882,7 +1105,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       }).toList();
 
       playersData.sort((a, b) {
-        if ((b['points'] as int) != (a['points'] as int)) return (b['points'] as int).compareTo(a['points'] as int);
+        if ((b['points'] as int) != (a['points'] as int))
+          return (b['points'] as int).compareTo(a['points'] as int);
         final gdA = (a['gf'] as int) - (a['ga'] as int);
         final gdB = (b['gf'] as int) - (b['ga'] as int);
         if (gdB != gdA) return gdB.compareTo(gdA);
@@ -892,7 +1116,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       final topPlayers = playersData.take(100).toList();
 
       final batch = db.batch();
-      
+
       // Save Archive
       final archiveRef = db.collection('season_history').doc(seasonId);
       batch.set(archiveRef, {
@@ -925,7 +1149,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             backgroundColor: AppTheme.accentGreen,
             content: Text(
               'SEASON CLOSED AND STATS RESET SUCCESSFULLY!',
-              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         );
@@ -936,7 +1163,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: Colors.redAccent,
-            content: Text('ERROR CLOSING SEASON: ${e.toString().toUpperCase()}', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500)),
+            content: Text(
+              'ERROR CLOSING SEASON: ${e.toString().toUpperCase()}',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         );
       }
@@ -951,182 +1184,295 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           isMobile
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'DASHBOARD OVERVIEW',
-                    style: GoogleFonts.rajdhani(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryGold,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _seedPlayers(),
-                          icon: const Icon(Icons.person_add, size: 18),
-                          label: Text('SEED',
-                              style: GoogleFonts.rajdhani(
-                                  fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, padding: EdgeInsets.zero),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _createDemoTournament(),
-                          icon: const Icon(Icons.science, size: 18),
-                          label: Text('DEMO',
-                              style: GoogleFonts.rajdhani(
-                                  fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, padding: EdgeInsets.zero),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _showCreateTournament(context),
-                          icon: const Icon(Icons.add, size: 18),
-                          label: Text('NEW',
-                              style: GoogleFonts.rajdhani(
-                                  fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
-                          style: ElevatedButton.styleFrom(padding: EdgeInsets.zero),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                       'DASHBOARD OVERVIEW',
                       style: GoogleFonts.rajdhani(
-                        fontSize: isMobile ? 24 : 30,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.primaryGold,
                         letterSpacing: 1.5,
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    alignment: WrapAlignment.end,
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: () => _seedPlayers(),
-                        icon: const Icon(Icons.person_add),
-                        label: Text('SEED 64 PLAYERS',
-                            style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _seedPlayers(),
+                            icon: const Icon(Icons.person_add, size: 18),
+                            label: Text(
+                              'SEED',
+                              style: GoogleFonts.rajdhani(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.1,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                              padding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _createDemoTournament(),
+                            icon: const Icon(Icons.science, size: 18),
+                            label: Text(
+                              'DEMO',
+                              style: GoogleFonts.rajdhani(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.1,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                              padding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showCreateTournament(context),
+                            icon: const Icon(Icons.add, size: 18),
+                            label: Text(
+                              'NEW',
+                              style: GoogleFonts.rajdhani(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.1,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'DASHBOARD OVERVIEW',
+                        style: GoogleFonts.rajdhani(
+                          fontSize: isMobile ? 24 : 30,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryGold,
+                          letterSpacing: 1.5,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      ElevatedButton.icon(
-                        onPressed: () => _createDemoTournament(),
-                        icon: const Icon(Icons.science),
-                        label: Text('DEMO TOURNAMENT',
-                            style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-                      ),
-                      ElevatedButton.icon(
-                        onPressed: () => _showCreateTournament(context),
-                        icon: const Icon(Icons.add),
-                        label: Text('NEW TOURNAMENT',
-                            style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                    const SizedBox(width: 16),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      alignment: WrapAlignment.end,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () => _seedPlayers(),
+                          icon: const Icon(Icons.person_add),
+                          label: Text(
+                            'SEED 64 PLAYERS',
+                            style: GoogleFonts.rajdhani(
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () => _createDemoTournament(),
+                          icon: const Icon(Icons.science),
+                          label: Text(
+                            'DEMO TOURNAMENT',
+                            style: GoogleFonts.rajdhani(
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.indigo,
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () => _showCreateTournament(context),
+                          icon: const Icon(Icons.add),
+                          label: Text(
+                            'NEW TOURNAMENT',
+                            style: GoogleFonts.rajdhani(
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
           const SizedBox(height: 32),
           isMobile
-            ? Column(
-                children: [
-                  Row(
-                    children: [
-                      StreamBuilder<List<Tournament>>(
-                        stream: DatabaseService().getTournaments(),
-                        builder: (context, snapshot) {
-                          final count = snapshot.data?.where((t) => t.status == TournamentStatus.ongoing).length ?? 0;
-                          return _buildStatCard('Active', '$count', Icons.play_arrow, AppTheme.accentBlue, isMobile: true);
-                        },
-                      ),
-                      const SizedBox(width: 12),
-                      StreamBuilder<List<Registration>>(
-                        stream: DatabaseService().getAllRegistrations(),
-                        builder: (context, snapshot) {
-                          final count = snapshot.data?.where((r) => r.status == RegistrationStatus.pending).length ?? 0;
-                          return _buildStatCard('Pending', '$count', Icons.pending_actions, AppTheme.primaryGold, isMobile: true);
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      StreamBuilder<List<Map<String, dynamic>>>(
-                        stream: DatabaseService().getProfileUpdateRequests(),
-                        builder: (context, snapshot) {
-                          final count = snapshot.data?.length ?? 0;
-                          return _buildStatCard('Requests', '$count', Icons.notification_important, Colors.orangeAccent, isMobile: true);
-                        },
-                      ),
-                      const SizedBox(width: 12),
-                      StreamBuilder<List<Player>>(
-                        stream: DatabaseService().getPlayersStream(),
-                        builder: (context, snapshot) {
-                          final count = snapshot.data?.length ?? 0;
-                          return _buildStatCard('Total Players', '$count', Icons.group, AppTheme.accentGreen, isMobile: true);
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              )
-            : Row(
-                children: [
-                  StreamBuilder<List<Tournament>>(
-                    stream: DatabaseService().getTournaments(),
-                    builder: (context, snapshot) {
-                      final count = snapshot.data?.where((t) => t.status == TournamentStatus.ongoing).length ?? 0;
-                      return _buildStatCard('Active Tournaments', '$count', Icons.play_arrow, AppTheme.accentBlue);
-                    },
-                  ),
-                  const SizedBox(width: 24),
-                  StreamBuilder<List<Registration>>(
-                    stream: DatabaseService().getAllRegistrations(),
-                    builder: (context, snapshot) {
-                      final count = snapshot.data?.where((r) => r.status == RegistrationStatus.pending).length ?? 0;
-                      return _buildStatCard('Pending Payments', '$count', Icons.pending_actions, AppTheme.primaryGold);
-                    },
-                  ),
-                  const SizedBox(width: 24),
-                  StreamBuilder<List<Map<String, dynamic>>>(
-                    stream: DatabaseService().getProfileUpdateRequests(),
-                    builder: (context, snapshot) {
-                      final count = snapshot.data?.length ?? 0;
-                      return _buildStatCard('Profile Requests', '$count', Icons.notification_important, Colors.orangeAccent);
-                    },
-                  ),
-                  const SizedBox(width: 24),
-                  StreamBuilder<List<Player>>(
-                    stream: DatabaseService().getPlayersStream(),
-                    builder: (context, snapshot) {
-                      final count = snapshot.data?.length ?? 0;
-                      return _buildStatCard('Total Players', '$count', Icons.group, AppTheme.accentGreen);
-                    },
-                  ),
-                ],
-              ),
+              ? Column(
+                  children: [
+                    Row(
+                      children: [
+                        StreamBuilder<List<Tournament>>(
+                          stream: DatabaseService().getTournaments(),
+                          builder: (context, snapshot) {
+                            final count =
+                                snapshot.data
+                                    ?.where(
+                                      (t) =>
+                                          t.status == TournamentStatus.ongoing,
+                                    )
+                                    .length ??
+                                0;
+                            return _buildStatCard(
+                              'Active',
+                              '$count',
+                              Icons.play_arrow,
+                              AppTheme.accentBlue,
+                              isMobile: true,
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 12),
+                        StreamBuilder<List<Registration>>(
+                          stream: DatabaseService().getAllRegistrations(),
+                          builder: (context, snapshot) {
+                            final count =
+                                snapshot.data
+                                    ?.where(
+                                      (r) =>
+                                          r.status ==
+                                          RegistrationStatus.pending,
+                                    )
+                                    .length ??
+                                0;
+                            return _buildStatCard(
+                              'Pending',
+                              '$count',
+                              Icons.pending_actions,
+                              AppTheme.primaryGold,
+                              isMobile: true,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        StreamBuilder<List<Map<String, dynamic>>>(
+                          stream: DatabaseService().getProfileUpdateRequests(),
+                          builder: (context, snapshot) {
+                            final count = snapshot.data?.length ?? 0;
+                            return _buildStatCard(
+                              'Requests',
+                              '$count',
+                              Icons.notification_important,
+                              Colors.orangeAccent,
+                              isMobile: true,
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 12),
+                        StreamBuilder<List<Player>>(
+                          stream: DatabaseService().getPlayersStream(),
+                          builder: (context, snapshot) {
+                            final count = snapshot.data?.length ?? 0;
+                            return _buildStatCard(
+                              'Total Players',
+                              '$count',
+                              Icons.group,
+                              AppTheme.accentGreen,
+                              isMobile: true,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    StreamBuilder<List<Tournament>>(
+                      stream: DatabaseService().getTournaments(),
+                      builder: (context, snapshot) {
+                        final count =
+                            snapshot.data
+                                ?.where(
+                                  (t) => t.status == TournamentStatus.ongoing,
+                                )
+                                .length ??
+                            0;
+                        return _buildStatCard(
+                          'Active Tournaments',
+                          '$count',
+                          Icons.play_arrow,
+                          AppTheme.accentBlue,
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 24),
+                    StreamBuilder<List<Registration>>(
+                      stream: DatabaseService().getAllRegistrations(),
+                      builder: (context, snapshot) {
+                        final count =
+                            snapshot.data
+                                ?.where(
+                                  (r) => r.status == RegistrationStatus.pending,
+                                )
+                                .length ??
+                            0;
+                        return _buildStatCard(
+                          'Pending Payments',
+                          '$count',
+                          Icons.pending_actions,
+                          AppTheme.primaryGold,
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 24),
+                    StreamBuilder<List<Map<String, dynamic>>>(
+                      stream: DatabaseService().getProfileUpdateRequests(),
+                      builder: (context, snapshot) {
+                        final count = snapshot.data?.length ?? 0;
+                        return _buildStatCard(
+                          'Profile Requests',
+                          '$count',
+                          Icons.notification_important,
+                          Colors.orangeAccent,
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 24),
+                    StreamBuilder<List<Player>>(
+                      stream: DatabaseService().getPlayersStream(),
+                      builder: (context, snapshot) {
+                        final count = snapshot.data?.length ?? 0;
+                        return _buildStatCard(
+                          'Total Players',
+                          '$count',
+                          Icons.group,
+                          AppTheme.accentGreen,
+                        );
+                      },
+                    ),
+                  ],
+                ),
           const SizedBox(height: 48),
           _buildTournamentSelector(),
           const SizedBox(height: 24),
@@ -1144,34 +1490,34 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           isMobile
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'MATCH MANAGEMENT',
-                    style: GoogleFonts.rajdhani(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryGold,
-                      letterSpacing: 1.5,
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'MATCH MANAGEMENT',
+                      style: GoogleFonts.rajdhani(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryGold,
+                        letterSpacing: 1.5,
+                      ),
                     ),
-                  ),
-                ],
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'MATCH MANAGEMENT',
-                    style: GoogleFonts.rajdhani(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryGold,
-                      letterSpacing: 1.5,
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'MATCH MANAGEMENT',
+                      style: GoogleFonts.rajdhani(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryGold,
+                        letterSpacing: 1.5,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
           const SizedBox(height: 32),
           _buildTournamentSelector(),
           const SizedBox(height: 24),
@@ -1188,9 +1534,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     child: Column(
                       children: [
                         const SizedBox(height: 60),
-                        const Icon(Icons.sports_esports, size: 64, color: AppTheme.textGrey),
+                        const Icon(
+                          Icons.sports_esports,
+                          size: 64,
+                          color: AppTheme.textGrey,
+                        ),
                         const SizedBox(height: 16),
-                        Text('No matches found for this tournament.', style: GoogleFonts.poppins(color: AppTheme.textGrey)),
+                        Text(
+                          'No matches found for this tournament.',
+                          style: GoogleFonts.poppins(color: AppTheme.textGrey),
+                        ),
                       ],
                     ),
                   );
@@ -1199,8 +1552,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: matches.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) => _buildMatchCard(matches[index]),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
+                  itemBuilder: (context, index) =>
+                      _buildMatchCard(matches[index]),
                 );
               },
             ),
@@ -1219,11 +1574,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(match.player1Ign,
-                      style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.2)),
+                  Text(
+                    match.player1Ign,
+                    style: GoogleFonts.rajdhani(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
                   if (match.isCompleted || match.resultSubmittedBy != null)
-                    Text(match.player1Score.toString(),
-                        style: GoogleFonts.rajdhani(fontSize: 26, color: AppTheme.primaryGold, fontWeight: FontWeight.bold)),
+                    Text(
+                      match.player1Score.toString(),
+                      style: GoogleFonts.rajdhani(
+                        fontSize: 26,
+                        color: AppTheme.primaryGold,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -1231,24 +1598,42 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
                 children: [
-                  Text(match.round,
-                      style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 14, letterSpacing: 1.1)),
-                  Text('VS',
-                      style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, color: AppTheme.textGrey, letterSpacing: 1.5)),
+                  Text(
+                    match.round,
+                    style: GoogleFonts.rajdhani(
+                      color: AppTheme.textGrey,
+                      fontSize: 14,
+                      letterSpacing: 1.1,
+                    ),
+                  ),
+                  Text(
+                    'VS',
+                    style: GoogleFonts.rajdhani(
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textGrey,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
                   if (match.resultSubmittedBy != null && !match.isVerified)
                     Container(
                       margin: const EdgeInsets.only(top: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: AppTheme.primaryGold.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Text('PENDING',
-                          style: GoogleFonts.rajdhani(
-                              color: AppTheme.primaryGold,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.1)),
+                      child: Text(
+                        'PENDING',
+                        style: GoogleFonts.rajdhani(
+                          color: AppTheme.primaryGold,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
                     ),
                 ],
               ),
@@ -1257,21 +1642,45 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(match.player2Ign,
-                      style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.2)),
+                  Text(
+                    match.player2Ign,
+                    style: GoogleFonts.rajdhani(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
                   if (match.isCompleted || match.resultSubmittedBy != null)
-                    Text(match.player2Score.toString(),
-                        style: GoogleFonts.rajdhani(fontSize: 26, color: AppTheme.primaryGold, fontWeight: FontWeight.bold)),
+                    Text(
+                      match.player2Score.toString(),
+                      style: GoogleFonts.rajdhani(
+                        fontSize: 26,
+                        color: AppTheme.primaryGold,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                 ],
               ),
             ),
             if (match.resultSubmittedBy != null && !match.isVerified)
               ElevatedButton.icon(
                 onPressed: () => _showVerificationDialog(match),
-                icon: const Icon(Icons.image_search, size: 16, color: Colors.black),
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryGold),
-                label: Text('VERIFY RESULT',
-                    style: GoogleFonts.rajdhani(color: Colors.black, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                icon: const Icon(
+                  Icons.image_search,
+                  size: 16,
+                  color: Colors.black,
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryGold,
+                ),
+                label: Text(
+                  'VERIFY RESULT',
+                  style: GoogleFonts.rajdhani(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
               )
             else if (!match.isCompleted)
               Row(
@@ -1280,11 +1689,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ElevatedButton.icon(
                     onPressed: () => _showVerificationDialog(match),
                     icon: const Icon(Icons.edit, size: 16, color: Colors.black),
-                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryGold),
-                    label: Text('SET RESULT',
-                        style: GoogleFonts.rajdhani(color: Colors.black, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryGold,
+                    ),
+                    label: Text(
+                      'SET RESULT',
+                      style: GoogleFonts.rajdhani(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
                   ),
-                  if (match.deadline != null && match.deadline!.isBefore(DateTime.now())) ...[
+                  if (match.deadline != null &&
+                      match.deadline!.isBefore(DateTime.now())) ...[
                     const SizedBox(width: 8),
                     OutlinedButton.icon(
                       onPressed: () async {
@@ -1298,17 +1716,29 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         await DatabaseService().verifyMatchResult(expiredMatch);
                         messenger.showSnackBar(
                           const SnackBar(
-                            content: Text('Match resolved to 0-0 due to expired deadline.'),
+                            content: Text(
+                              'Match resolved to 0-0 due to expired deadline.',
+                            ),
                             backgroundColor: AppTheme.accentGreen,
                           ),
                         );
                       },
-                      icon: const Icon(Icons.timer_off, size: 14, color: Colors.orangeAccent),
+                      icon: const Icon(
+                        Icons.timer_off,
+                        size: 14,
+                        color: Colors.orangeAccent,
+                      ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.orangeAccent,
                         side: const BorderSide(color: Colors.orangeAccent),
                       ),
-                      label: const Text('0-0 EXPIRED', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                      label: const Text(
+                        '0-0 EXPIRED',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ],
@@ -1319,7 +1749,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 children: [
                   IconButton(
                     onPressed: () => _showVerificationDialog(match),
-                    icon: const Icon(Icons.edit, color: AppTheme.primaryGold, size: 20),
+                    icon: const Icon(
+                      Icons.edit,
+                      color: AppTheme.primaryGold,
+                      size: 20,
+                    ),
                     tooltip: 'Edit Result',
                   ),
                   const Icon(Icons.verified, color: AppTheme.accentGreen),
@@ -1334,10 +1768,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   void _showVerificationDialog(TournamentMatch match) {
-    final s1Controller = TextEditingController(text: (match.player1Score ?? 0).toString());
-    final s2Controller = TextEditingController(text: (match.player2Score ?? 0).toString());
-    final pk1Controller = TextEditingController(text: match.p1PkScore != null ? match.p1PkScore.toString() : '');
-    final pk2Controller = TextEditingController(text: match.p2PkScore != null ? match.p2PkScore.toString() : '');
+    final s1Controller = TextEditingController(
+      text: (match.player1Score ?? 0).toString(),
+    );
+    final s2Controller = TextEditingController(
+      text: (match.player2Score ?? 0).toString(),
+    );
+    final pk1Controller = TextEditingController(
+      text: match.p1PkScore != null ? match.p1PkScore.toString() : '',
+    );
+    final pk2Controller = TextEditingController(
+      text: match.p2PkScore != null ? match.p2PkScore.toString() : '',
+    );
 
     showDialog(
       context: context,
@@ -1357,14 +1799,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               FutureBuilder<Player?>(
-                future: match.resultSubmittedBy != null && match.resultSubmittedBy!.length > 20
+                future:
+                    match.resultSubmittedBy != null &&
+                        match.resultSubmittedBy!.length > 20
                     ? DatabaseService().getPlayer(match.resultSubmittedBy!)
                     : Future.value(null),
                 builder: (context, snapshot) {
-                  final displayName = snapshot.data?.ign ?? match.resultSubmittedBy ?? 'Unknown';
+                  final displayName =
+                      snapshot.data?.ign ??
+                      match.resultSubmittedBy ??
+                      'Unknown';
                   return Text(
                     'Result submitted by: $displayName',
-                    style: GoogleFonts.poppins(color: AppTheme.textGrey, fontSize: 13),
+                    style: GoogleFonts.poppins(
+                      color: AppTheme.textGrey,
+                      fontSize: 13,
+                    ),
                   );
                 },
               ),
@@ -1399,7 +1849,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const SizedBox(height: 16),
               Text(
                 'EDIT SCORES IF NEEDED (ADMIN CORRECTION)',
-                style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+                style: GoogleFonts.rajdhani(
+                  color: AppTheme.textGrey,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.0,
+                ),
               ),
               const SizedBox(height: 12),
               Row(
@@ -1410,7 +1865,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       children: [
                         Text(
                           match.player1Ign,
-                          style: GoogleFonts.rajdhani(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                          style: GoogleFonts.rajdhani(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
@@ -1418,22 +1877,40 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           controller: s1Controller,
                           keyboardType: TextInputType.number,
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.rajdhani(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.primaryGold),
-                          decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(vertical: 8)),
+                          style: GoogleFonts.rajdhani(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryGold,
+                          ),
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 8),
+                          ),
                         ),
                       ],
                     ),
                   ),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12),
-                    child: Text('-', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                    child: Text(
+                      '-',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                   Expanded(
                     child: Column(
                       children: [
                         Text(
                           match.player2Ign,
-                          style: GoogleFonts.rajdhani(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                          style: GoogleFonts.rajdhani(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
@@ -1441,8 +1918,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           controller: s2Controller,
                           keyboardType: TextInputType.number,
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.rajdhani(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.primaryGold),
-                          decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(vertical: 8)),
+                          style: GoogleFonts.rajdhani(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryGold,
+                          ),
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 8),
+                          ),
                         ),
                       ],
                     ),
@@ -1451,7 +1935,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
               const SizedBox(height: 16),
               // PK Section (Knockout matches only)
-              if (match.round != 'Group Stage' && (match.groupId == null || match.groupId!.isEmpty))
+              if (match.round != 'Group Stage' &&
+                  (match.groupId == null || match.groupId!.isEmpty))
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -1459,50 +1944,75 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.white10),
                   ),
-                child: Column(
-                  children: [
-                    Text(
-                      'PENALTY SHOOTOUT (PK) SCORES (OPTIONAL)',
-                      style: GoogleFonts.rajdhani(color: AppTheme.primaryGold, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: pk1Controller,
-                            keyboardType: TextInputType.number,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.rajdhani(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                            decoration: InputDecoration(
-                              isDense: true,
-                              labelText: '${match.player1Ign} PK',
-                              labelStyle: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 11),
+                  child: Column(
+                    children: [
+                      Text(
+                        'PENALTY SHOOTOUT (PK) SCORES (OPTIONAL)',
+                        style: GoogleFonts.rajdhani(
+                          color: AppTheme.primaryGold,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: pk1Controller,
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.rajdhani(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              decoration: InputDecoration(
+                                isDense: true,
+                                labelText: '${match.player1Ign} PK',
+                                labelStyle: GoogleFonts.rajdhani(
+                                  color: AppTheme.textGrey,
+                                  fontSize: 11,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Text('PK', style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold)),
-                        ),
-                        Expanded(
-                          child: TextField(
-                            controller: pk2Controller,
-                            keyboardType: TextInputType.number,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.rajdhani(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                            decoration: InputDecoration(
-                              isDense: true,
-                              labelText: '${match.player2Ign} PK',
-                              labelStyle: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 11),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(
+                              'PK',
+                              style: TextStyle(
+                                color: Colors.white24,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          Expanded(
+                            child: TextField(
+                              controller: pk2Controller,
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.rajdhani(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              decoration: InputDecoration(
+                                isDense: true,
+                                labelText: '${match.player2Ign} PK',
+                                labelStyle: GoogleFonts.rajdhani(
+                                  color: AppTheme.textGrey,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -1511,13 +2021,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               'CANCEL',
-              style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+              style: GoogleFonts.rajdhani(
+                color: AppTheme.textGrey,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
             ),
           ),
           ElevatedButton(
             onPressed: () async {
-              final s1 = int.tryParse(s1Controller.text.trim()) ?? (match.player1Score ?? 0);
-              final s2 = int.tryParse(s2Controller.text.trim()) ?? (match.player2Score ?? 0);
+              final s1 =
+                  int.tryParse(s1Controller.text.trim()) ??
+                  (match.player1Score ?? 0);
+              final s2 =
+                  int.tryParse(s2Controller.text.trim()) ??
+                  (match.player2Score ?? 0);
               final pk1 = int.tryParse(pk1Controller.text.trim());
               final pk2 = int.tryParse(pk2Controller.text.trim());
 
@@ -1533,7 +2051,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             },
             child: Text(
               'VERIFY & UPDATE STANDINGS',
-              style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, letterSpacing: 1.2),
+              style: GoogleFonts.rajdhani(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
             ),
           ),
         ],
@@ -1564,8 +2085,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
-              final config = snapshot.data ?? CommunityConfig(facebookGroup: '', facebookPage: '', whatsappGroup: '');
-              
+              final config =
+                  snapshot.data ??
+                  CommunityConfig(
+                    facebookGroup: '',
+                    facebookPage: '',
+                    whatsappGroup: '',
+                  );
+
               return _CommunitySettingsForm(config: config);
             },
           ),
@@ -1585,7 +2112,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
         if (_selectedTournamentId.isEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) setState(() => _selectedTournamentId = tournaments.first.id);
+            if (mounted)
+              setState(() => _selectedTournamentId = tournaments.first.id);
           });
         }
 
@@ -1593,16 +2121,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           width: isMobile ? double.infinity : 300,
           child: DropdownButtonFormField<String>(
             isExpanded: true,
-            initialValue: _selectedTournamentId.isEmpty ? null : _selectedTournamentId,
+            initialValue: _selectedTournamentId.isEmpty
+                ? null
+                : _selectedTournamentId,
             decoration: const InputDecoration(labelText: 'Select Tournament'),
             items: tournaments
-                .map((t) => DropdownMenuItem(
-                      value: t.id,
-                      child: Text(
-                        t.title,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ))
+                .map(
+                  (t) => DropdownMenuItem(
+                    value: t.id,
+                    child: Text(t.title, overflow: TextOverflow.ellipsis),
+                  ),
+                )
                 .toList(),
             onChanged: (val) => setState(() => _selectedTournamentId = val!),
           ),
@@ -1624,19 +2153,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildSidebarItem(IconData icon, String title, bool isActive, VoidCallback onTap, {int? badgeCount}) {
+  Widget _buildSidebarItem(
+    IconData icon,
+    String title,
+    bool isActive,
+    VoidCallback onTap, {
+    int? badgeCount,
+  }) {
     return ListTile(
       leading: Stack(
         clipBehavior: Clip.none,
         children: [
-          Icon(icon, color: isActive ? AppTheme.primaryGold : AppTheme.textGrey),
+          Icon(
+            icon,
+            color: isActive ? AppTheme.primaryGold : AppTheme.textGrey,
+          ),
           if (badgeCount != null)
             Positioned(
               right: -8,
               top: -8,
               child: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
                 constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                 child: Text(
                   '$badgeCount',
@@ -1666,7 +2207,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color, {bool isMobile = false}) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color, {
+    bool isMobile = false,
+  }) {
     final card = Container(
       padding: EdgeInsets.all(isMobile ? 16 : 24),
       decoration: BoxDecoration(
@@ -1741,67 +2288,135 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
                   columnSpacing: isMobile ? 24 : 56,
-                  headingRowColor: WidgetStateProperty.all(AppTheme.primaryGold.withValues(alpha: 0.05)),
+                  headingRowColor: WidgetStateProperty.all(
+                    AppTheme.primaryGold.withValues(alpha: 0.05),
+                  ),
                   columns: [
                     DataColumn(
-                        label: Text('PLAYER INFO',
-                            style: GoogleFonts.rajdhani(
-                                fontWeight: FontWeight.bold, color: AppTheme.primaryGold, letterSpacing: 1.2))),
+                      label: Text(
+                        'PLAYER INFO',
+                        style: GoogleFonts.rajdhani(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryGold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
                     DataColumn(
-                        label: Text('TRXID',
-                            style: GoogleFonts.rajdhani(
-                                fontWeight: FontWeight.bold, color: AppTheme.primaryGold, letterSpacing: 1.2))),
+                      label: Text(
+                        'TRXID',
+                        style: GoogleFonts.rajdhani(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryGold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
                     DataColumn(
-                        label: Text('STATUS',
-                            style: GoogleFonts.rajdhani(
-                                fontWeight: FontWeight.bold, color: AppTheme.primaryGold, letterSpacing: 1.2))),
+                      label: Text(
+                        'STATUS',
+                        style: GoogleFonts.rajdhani(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryGold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
                     DataColumn(
-                        label: Text('ACTIONS',
-                            style: GoogleFonts.rajdhani(
-                                fontWeight: FontWeight.bold, color: AppTheme.primaryGold, letterSpacing: 1.2))),
+                      label: Text(
+                        'ACTIONS',
+                        style: GoogleFonts.rajdhani(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryGold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
                   ],
                   rows: registrations.map((reg) {
                     Color statusColor = Colors.white70;
-                    if (reg.status == RegistrationStatus.verified) statusColor = AppTheme.accentGreen;
-                    if (reg.status == RegistrationStatus.rejected) statusColor = Colors.redAccent;
+                    if (reg.status == RegistrationStatus.verified)
+                      statusColor = AppTheme.accentGreen;
+                    if (reg.status == RegistrationStatus.rejected)
+                      statusColor = Colors.redAccent;
 
                     return DataRow(
                       cells: [
-                        DataCell(Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Text(
-                            '${reg.playerName}\nIGN: ${reg.playerIgn}\nEmail: ${reg.playerEmail}\nUID: ${reg.playerUid}\nWA: ${reg.playerWhatsapp}',
-                            style: GoogleFonts.poppins(fontSize: 12, height: 1.4),
+                        DataCell(
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              '${reg.playerName}\nIGN: ${reg.playerIgn}\nEmail: ${reg.playerEmail}\nUID: ${reg.playerUid}\nWA: ${reg.playerWhatsapp}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                height: 1.4,
+                              ),
+                            ),
                           ),
-                        )),
-                        DataCell(Text(reg.trxId, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500))),
-                        DataCell(Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: statusColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(4),
+                        ),
+                        DataCell(
+                          Text(
+                            reg.trxId,
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                          child: Text(
-                            reg.status.name.toUpperCase(),
-                            style: GoogleFonts.rajdhani(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                        ),
+                        DataCell(
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: statusColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              reg.status.name.toUpperCase(),
+                              style: GoogleFonts.rajdhani(
+                                color: statusColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.1,
+                              ),
+                            ),
                           ),
-                        )),
+                        ),
                         DataCell(
                           Row(
                             children: [
                               if (reg.status == RegistrationStatus.pending) ...[
                                 IconButton(
-                                  icon: const Icon(Icons.check_circle, color: AppTheme.accentGreen, size: 22),
-                                  onPressed: () => DatabaseService().verifyRegistration(reg),
+                                  icon: const Icon(
+                                    Icons.check_circle,
+                                    color: AppTheme.accentGreen,
+                                    size: 22,
+                                  ),
+                                  onPressed: () =>
+                                      DatabaseService().verifyRegistration(reg),
                                   tooltip: 'Approve & Lock Seat',
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.cancel, color: Colors.redAccent, size: 22),
-                                  onPressed: () => DatabaseService().updateRegistrationStatus(reg.id, RegistrationStatus.rejected),
+                                  icon: const Icon(
+                                    Icons.cancel,
+                                    color: Colors.redAccent,
+                                    size: 22,
+                                  ),
+                                  onPressed: () => DatabaseService()
+                                      .updateRegistrationStatus(
+                                        reg.id,
+                                        RegistrationStatus.rejected,
+                                      ),
                                   tooltip: 'Reject',
                                 ),
                               ] else
-                                const Icon(Icons.done_all, color: Colors.white24, size: 20),
+                                const Icon(
+                                  Icons.done_all,
+                                  color: Colors.white24,
+                                  size: 20,
+                                ),
                             ],
                           ),
                         ),
@@ -1835,9 +2450,13 @@ class _CommunitySettingsFormState extends State<_CommunitySettingsForm> {
   @override
   void initState() {
     super.initState();
-    _fbGroupController = TextEditingController(text: widget.config.facebookGroup);
+    _fbGroupController = TextEditingController(
+      text: widget.config.facebookGroup,
+    );
     _fbPageController = TextEditingController(text: widget.config.facebookPage);
-    _waGroupController = TextEditingController(text: widget.config.whatsappGroup);
+    _waGroupController = TextEditingController(
+      text: widget.config.whatsappGroup,
+    );
   }
 
   @override
@@ -1860,7 +2479,10 @@ class _CommunitySettingsFormState extends State<_CommunitySettingsForm> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('COMMUNITY LINKS UPDATED!', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+            content: Text(
+              'COMMUNITY LINKS UPDATED!',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+            ),
             backgroundColor: AppTheme.accentGreen,
           ),
         );
@@ -1869,7 +2491,10 @@ class _CommunitySettingsFormState extends State<_CommunitySettingsForm> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('ERROR UPDATING LINKS: $e', style: GoogleFonts.poppins()),
+            content: Text(
+              'ERROR UPDATING LINKS: $e',
+              style: GoogleFonts.poppins(),
+            ),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -1892,20 +2517,42 @@ class _CommunitySettingsFormState extends State<_CommunitySettingsForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildField('FACEBOOK COMMUNITY GROUP', _fbGroupController, Icons.groups),
+          _buildField(
+            'FACEBOOK COMMUNITY GROUP',
+            _fbGroupController,
+            Icons.groups,
+          ),
           const SizedBox(height: 20),
           _buildField('FACEBOOK PAGE', _fbPageController, Icons.facebook),
           const SizedBox(height: 20),
-          _buildField('WHATSAPP COMMUNITY GROUP', _waGroupController, Icons.chat),
+          _buildField(
+            'WHATSAPP COMMUNITY GROUP',
+            _waGroupController,
+            Icons.chat,
+          ),
           const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
               onPressed: _isSaving ? null : _save,
-              child: _isSaving 
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                : Text('SAVE CHANGES', style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, letterSpacing: 1.5, fontSize: 16)),
+              child: _isSaving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.black,
+                      ),
+                    )
+                  : Text(
+                      'SAVE CHANGES',
+                      style: GoogleFonts.rajdhani(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
+                        fontSize: 16,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -1913,7 +2560,11 @@ class _CommunitySettingsFormState extends State<_CommunitySettingsForm> {
     );
   }
 
-  Widget _buildField(String label, TextEditingController controller, IconData icon) {
+  Widget _buildField(
+    String label,
+    TextEditingController controller,
+    IconData icon,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1933,7 +2584,10 @@ class _CommunitySettingsFormState extends State<_CommunitySettingsForm> {
           decoration: InputDecoration(
             hintText: 'https://...',
             prefixIcon: Icon(icon, size: 20, color: AppTheme.textGrey),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
           ),
         ),
       ],
@@ -1947,9 +2601,6 @@ class _TableCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Text(text),
-    );
+    return Padding(padding: const EdgeInsets.all(16), child: Text(text));
   }
 }
