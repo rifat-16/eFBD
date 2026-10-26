@@ -1060,10 +1060,6 @@ class _MatchHistoryTabState extends State<_MatchHistoryTab> {
       },
     );
   }
-
-  Widget _buildPlayersList(Tournament tournament) {
-    return _PlayersListTab(tournamentId: tournament.id);
-  }
 }
 
 class _PlayersListTab extends StatefulWidget {
