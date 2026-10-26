@@ -235,7 +235,7 @@ class _TournamentRegistrationDialogState extends State<TournamentRegistrationDia
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Send ${widget.tournament.entryFee} BDT to 017XXXXXXXX (bKash/Nagad Personal)',
+                        'Please pay the entry fee of ${widget.tournament.entryFee} BDT and provide the transaction ID below.',
                         style: GoogleFonts.poppins(fontSize: 13, color: Colors.white),
                       ),
                     ],
