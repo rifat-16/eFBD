@@ -4,7 +4,7 @@ import '../services/database_service.dart';
 import '../../features/profile/models/player_profile_model.dart';
 
 class LeaderboardProvider with ChangeNotifier {
-  final DatabaseService _dbService = DatabaseService();
+  final DatabaseService _dbService;
 
   List<Player> _players = [];
   List<Player> _monthlyPlayers = [];
@@ -17,7 +17,8 @@ class LeaderboardProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isMonthlyLoading => _isMonthlyLoading;
 
-  LeaderboardProvider() {
+  LeaderboardProvider({DatabaseService? dbService})
+      : _dbService = dbService ?? DatabaseService() {
     _initStreams();
   }
 
