@@ -1941,22 +1941,6 @@ class _CommunitySettingsFormState extends State<_CommunitySettingsForm> {
   }
 }
 
-class _TableHeaderCell extends StatelessWidget {
-  final String text;
-  const _TableHeaderCell(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Text(
-        text,
-        style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryGold),
-      ),
-    );
-  }
-}
-
 class _TableCell extends StatelessWidget {
   final String text;
   const _TableCell(this.text);
