@@ -40,6 +40,7 @@ class _ProfileDialogState extends State<ProfileDialog> {
   bool _isUploading = false;
   bool _isLogin = true;
   String? _errorMessage;
+  bool _obscurePassword = true;
 
   void _showUpdateForm() {
     // Create temporary controllers for the update form to avoid modifying the main view's state prematurely
@@ -965,12 +966,16 @@ class _ProfileDialogState extends State<ProfileDialog> {
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: _passwordController,
-                  obscureText: true,
+                  obscureText: _obscurePassword,
                   style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
                   decoration: InputDecoration(
                     labelText: 'PASSWORD',
                     labelStyle: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, letterSpacing: 1),
                     prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    ),
                   ),
                   validator: (val) => val == null || val.length < 6 ? 'Password must be at least 6 characters' : null,
                 ),
