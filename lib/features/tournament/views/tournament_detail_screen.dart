@@ -849,10 +849,6 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     );
   }
 
-  Widget _buildMatchHistory(Tournament tournament) {
-    return _MatchHistoryTab(tournamentId: tournament.id);
-  }
-
   Future<void> _launchWhatsApp(String? url) async {
     if (url == null || url.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
