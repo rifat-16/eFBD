@@ -8,13 +8,11 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Helper function to check if user has admin role or is the super admin
+    // Helper function to check if user has admin role
     function isAdmin() {
-      return isSignedIn() && (
-        request.auth.token.email == 'rifat6teen@gmail.com' ||
-        (exists(/databases/$(database)/documents/players/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/players/$(request.auth.uid)).data.get('role', 'player') == 'admin')
-      );
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/players/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/players/$(request.auth.uid)).data.get('role', 'player') == 'admin';
     }
 
     // Profile update requests rules
@@ -35,8 +33,8 @@ service cloud.firestore {
     // Player profiles rules
     match /players/{playerId} {
       allow read: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && (request.auth.uid == playerId || isAdmin());
+      allow create: if isSignedIn() && request.resource.data.get('role', 'player') == 'player';
+      allow update: if isAdmin() || (isSignedIn() && request.auth.uid == playerId && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])));
       allow delete: if isAdmin();
     }
 
