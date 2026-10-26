@@ -50,7 +50,6 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   }
 
   Widget _buildInfoTab(Tournament tournament) {
-    final isMobile = ResponsiveHelper.isMobile(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
