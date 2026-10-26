@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui_web' as ui;
-import 'dart:html' as html;
+import 'package:web/web.dart' as web;
 import '../theme/app_theme.dart';
 
 class WebSafeImage extends StatefulWidget {
@@ -81,7 +81,7 @@ class _WebSafeImageState extends State<WebSafeImage> {
 
     // Register the image element
     ui.platformViewRegistry.registerViewFactory(viewId, (int viewId) {
-      final img = html.ImageElement()
+      final img = web.HTMLImageElement()
         ..src = url
         ..style.width = '100%'
         ..style.height = '100%'
