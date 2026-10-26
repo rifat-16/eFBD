@@ -28,8 +28,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   bool get isAdmin {
-    final email = _user?.email?.toLowerCase() ?? _auth.currentUser?.email?.toLowerCase();
-    return _playerProfile?.role == 'admin' || email == 'rifat6teen@gmail.com';
+    return _playerProfile?.role == 'admin';
   }
 
   AuthProvider() {
