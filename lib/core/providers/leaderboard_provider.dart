@@ -129,12 +129,6 @@ class LeaderboardProvider with ChangeNotifier {
   List<Player> get topPlayers => _players.take(10).toList();
   List<Player> get topMonthlyPlayers => _monthlyPlayers.take(10).toList();
 
-  void _setLoading(bool value) {
-    if (_isLoading == value) return;
-    _isLoading = value;
-    notifyListeners();
-  }
-
   @override
   void dispose() {
     _subscription?.cancel();
