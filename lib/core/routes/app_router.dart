@@ -88,6 +88,7 @@ class AppRouter {
           builder: (context, state) => const CompleteProfileScreen(),
           redirect: (context, state) {
             if (!authProvider.isAuthenticated) return '/login';
+            if (authProvider.isInitialized && authProvider.isAdmin) return '/admin';
             if (authProvider.isInitialized && authProvider.isProfileComplete) return '/';
             return null;
           },

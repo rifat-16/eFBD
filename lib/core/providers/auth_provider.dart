@@ -10,6 +10,7 @@ class AuthProvider with ChangeNotifier {
 
   User? _user;
   Player? _playerProfile;
+  bool _isAdmin = false;
   bool _isLoading = false;
   bool _isInitialized = false;
 
@@ -28,7 +29,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   bool get isAdmin {
-    return _playerProfile?.role == 'admin';
+    return _isAdmin;
   }
 
   AuthProvider() {
@@ -47,8 +48,10 @@ class AuthProvider with ChangeNotifier {
     
     if (firebaseUser != null) {
       await fetchPlayerProfile(firebaseUser.uid);
+      _isAdmin = await _dbService.isAdminEmail(firebaseUser.email ?? '');
     } else {
       _playerProfile = null;
+      _isAdmin = false;
     }
     
     _isInitialized = true;
@@ -58,6 +61,11 @@ class AuthProvider with ChangeNotifier {
   Future<void> fetchPlayerProfile(String uid) async {
     try {
       _playerProfile = await _dbService.getPlayer(uid);
+      if (_user?.email != null && _user!.email!.isNotEmpty) {
+        _isAdmin = await _dbService.isAdminEmail(_user!.email!);
+      } else {
+        _isAdmin = false;
+      }
       notifyListeners();
     } catch (e) {
       debugPrint('Error fetching player profile: $e');

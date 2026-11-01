@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../features/profile/models/player_profile_model.dart';
@@ -123,6 +124,26 @@ class DatabaseService {
 
 
   // --- Admins ---
+  Future<bool> isAdminEmail(String email) async {
+    final cleanEmail = email.trim().toLowerCase();
+    if (cleanEmail.isEmpty) return false;
+
+    try {
+      // STRICT: Check ONLY in 'admins' collection (doc ID = email, field 'active' = true)
+      final adminDoc = await _db.collection('admins').doc(cleanEmail).get();
+      if (adminDoc.exists) {
+        final data = adminDoc.data();
+        if (data == null || data['active'] == true) {
+          return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Error checking admin status in Firestore: $e');
+      return false;
+    }
+  }
+
   Future<List<String>> getAdminUserIds() async {
     final snapshot = await _db
         .collection('players')
