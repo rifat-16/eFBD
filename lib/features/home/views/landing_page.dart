@@ -8,6 +8,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/providers/leaderboard_provider.dart';
 import '../../../../core/widgets/web_safe_image.dart';
+import '../../../../core/widgets/animated_widgets.dart';
 import '../../profile/models/player_profile_model.dart';
 import '../../profile/views/widgets/profile_dialog.dart';
 import '../../tournament/views/widgets/news_section.dart';
@@ -41,46 +42,8 @@ class EFBDLandingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
-    final isAuthenticated = authProvider.isAuthenticated;
-
     return Scaffold(
       backgroundColor: AppTheme.darkBackground,
-      appBar: AppBar(
-        title: Text('eFootballers Bangladesh', style: GoogleFonts.rajdhani(letterSpacing: 2.5, fontWeight: FontWeight.bold, fontSize: 20)),
-        actions: [
-          if (!isAuthenticated)
-            ElevatedButton(
-              onPressed: () => _showProfileDialog(context),
-              child: const Text('JOIN NOW'),
-            )
-          else
-            TextButton.icon(
-              onPressed: () => _showProfileDialog(context, player: authProvider.playerProfile),
-              icon: CircleAvatar(
-                radius: 12,
-                backgroundImage: !kIsWeb && authProvider.playerProfile?.profileImageUrl != null && authProvider.playerProfile!.profileImageUrl!.trim().isNotEmpty
-                    ? NetworkImage(authProvider.playerProfile!.profileImageUrl!)
-                    : null,
-                child: ClipOval(
-                  child: authProvider.playerProfile?.profileImageUrl == null || authProvider.playerProfile!.profileImageUrl!.trim().isEmpty
-                      ? const Icon(Icons.person, size: 12)
-                      : (kIsWeb 
-                          ? WebSafeImage(
-                              imageUrl: authProvider.playerProfile!.profileImageUrl!,
-                              width: 24,
-                              height: 24,
-                              fit: BoxFit.cover,
-                              fallbackWidget: const Icon(Icons.person, size: 12),
-                            )
-                          : null),
-                ),
-              ),
-              label: Text(authProvider.playerProfile?.ign ?? 'Profile', style: const TextStyle(color: Colors.white)),
-            ),
-          const SizedBox(width: 20),
-        ],
-      ),
       body: SingleChildScrollView(
         child: Center(
           child: ConstrainedBox(
@@ -145,7 +108,14 @@ class EFBDLandingPage extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   border: Border.all(color: AppTheme.primaryGold, width: 2),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryGold.withValues(alpha: 0.2),
+                      blurRadius: 16,
+                      spreadRadius: 2,
+                    ),
+                  ],
                 ),
                 child: Text(
                   'eFootballers BD',
@@ -193,70 +163,63 @@ class EFBDLandingPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 32),
-          Wrap(
+          const Wrap(
             alignment: WrapAlignment.center,
             spacing: 12,
             runSpacing: 12,
             children: [
-              _buildBadge('FLUTTER', AppTheme.primaryGold, Colors.black),
-              _buildBadge('FIREBASE', AppTheme.accentBlue, Colors.white),
-              _buildBadge('RANKING', AppTheme.accentGreen, Colors.white),
-              _buildBadge('TROPHIES', AppTheme.primaryGold, Colors.black),
+              PulsingBadge(label: 'FLUTTER', color: AppTheme.primaryGold),
+              PulsingBadge(label: 'FIREBASE', color: AppTheme.accentBlue),
+              PulsingBadge(label: 'RANKING', color: AppTheme.accentGreen),
+              PulsingBadge(label: 'TROPHIES', color: AppTheme.primaryGold),
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildBadge(String text, Color bgColor, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: textColor,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-        ),
       ),
     );
   }
 
   Widget _buildSection({required String number, required String title, required Widget child}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 4,
-                height: 32,
-                color: AppTheme.primaryGold,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  '$number. $title',
-                  style: GoogleFonts.rajdhani(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
+    return SlideFadeTransition(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 32,
+                  decoration: BoxDecoration(
                     color: AppTheme.primaryGold,
-                    letterSpacing: 1.2,
+                    borderRadius: BorderRadius.circular(2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryGold.withValues(alpha: 0.8),
+                        blurRadius: 8,
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          child,
-        ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '$number. $title',
+                    style: GoogleFonts.rajdhani(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryGold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            child,
+          ],
+        ),
       ),
     );
   }
@@ -436,33 +399,34 @@ class EFBDLandingPage extends StatelessWidget {
   }
 
   Widget _buildModalPreview() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: AppTheme.cardBackground.withValues(alpha: 0.5),
-        border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.5), width: 1),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '[Trophy Cabinet Modal Preview - Player: RT6TEEN]',
-            style: GoogleFonts.rajdhani(
-              color: AppTheme.primaryGold, 
-              fontSize: 22, 
-              fontWeight: FontWeight.bold, 
-              letterSpacing: 1.2,
+    return HoverCard(
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: AppTheme.cardBackground.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '[Trophy Cabinet Modal Preview - Player: RT6TEEN]',
+              style: GoogleFonts.rajdhani(
+                color: AppTheme.primaryGold, 
+                fontSize: 22, 
+                fontWeight: FontWeight.bold, 
+                letterSpacing: 1.2,
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-          _buildModalPoint('Total Accolades: 2x Champion | 1x Runner-Up | 2x Golden Boot'),
-          _buildModalPoint('🏆 Champion: eFootballers Bangladesh Independence Cup 2026 (Aug 2026), Dhaka Super Clash (Jul 2026)'),
-          _buildModalPoint('🥈 Runner-Up: Monsoon Showdown (Jun 2026)'),
-          _buildModalPoint('👟 Golden Boot: eFootballers Bangladesh Independence Cup (11 Goals), Dhaka Super Clash (9 Goals)'),
-          _buildModalPoint('Lifetime Stats: 128 Goals Scored | 19 Clean Sheets'),
-        ],
+            const SizedBox(height: 20),
+            _buildModalPoint('Total Accolades: 2x Champion | 1x Runner-Up | 2x Golden Boot'),
+            _buildModalPoint('🏆 Champion: eFootballers Bangladesh Independence Cup 2026 (Aug 2026), Dhaka Super Clash (Jul 2026)'),
+            _buildModalPoint('🥈 Runner-Up: Monsoon Showdown (Jun 2026)'),
+            _buildModalPoint('👟 Golden Boot: eFootballers Bangladesh Independence Cup (11 Goals), Dhaka Super Clash (9 Goals)'),
+            _buildModalPoint('Lifetime Stats: 128 Goals Scored | 19 Clean Sheets'),
+          ],
+        ),
       ),
     );
   }

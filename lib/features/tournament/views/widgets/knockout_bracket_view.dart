@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/services/database_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/web_safe_image.dart';
+import '../../../../core/widgets/animated_widgets.dart';
 import '../../../match_hub/models/match_model.dart';
 import '../../../profile/models/player_profile_model.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -224,7 +225,7 @@ class KnockoutBracket extends StatelessWidget {
         return matches.firstWhere(
           (m) => m.bracketIndex == index,
           orElse: () => TournamentMatch(
-            id: 'tbd_$round\_$index',
+            id: 'tbd_${round}_$index',
             tournamentId: '',
             player1Id: '',
             player2Id: '',
@@ -468,33 +469,70 @@ class KnockoutBracket extends StatelessWidget {
   }
 
   Widget _buildChampionSection(TournamentMatch finalMatch) {
-    final winnerName = (finalMatch.player1Score ?? 0) > (finalMatch.player2Score ?? 0) ? finalMatch.player1Ign : finalMatch.player2Ign;
+    final s1 = finalMatch.player1Score ?? 0;
+    final s2 = finalMatch.player2Score ?? 0;
+    final pk1 = finalMatch.p1PkScore ?? 0;
+    final pk2 = finalMatch.p2PkScore ?? 0;
+
+    String winnerName;
+    if (s1 != s2) {
+      winnerName = s1 > s2 ? finalMatch.player1Ign : finalMatch.player2Ign;
+    } else if (pk1 != pk2) {
+      winnerName = pk1 > pk2 ? finalMatch.player1Ign : finalMatch.player2Ign;
+    } else {
+      winnerName = finalMatch.player1Ign;
+    }
 
     return Column(
       children: [
-        const Icon(Icons.emoji_events, color: AppTheme.primaryGold, size: 70),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppTheme.primaryGold.withValues(alpha: 0.15),
+            border: Border.all(color: AppTheme.primaryGold, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryGold.withValues(alpha: 0.5),
+                blurRadius: 30,
+                spreadRadius: 4,
+              ),
+            ],
+          ),
+          child: const Icon(Icons.emoji_events_rounded, color: AppTheme.primaryGold, size: 60),
+        ),
         const SizedBox(height: 12),
-        Text(
-          'TOURNAMENT CHAMPION',
-          style: GoogleFonts.rajdhani(
-            color: AppTheme.primaryGold,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.5,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryGold.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.5)),
+          ),
+          child: Text(
+            'TOURNAMENT CHAMPION',
+            style: GoogleFonts.rajdhani(
+              color: AppTheme.primaryGold,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.5,
+            ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
           decoration: BoxDecoration(
-            color: AppTheme.cardBackground,
+            color: const Color(0xFF161208),
             border: Border.all(color: AppTheme.primaryGold, width: 2),
-            borderRadius: BorderRadius.circular(4),
-            boxShadow: [BoxShadow(color: AppTheme.primaryGold.withValues(alpha: 0.2), blurRadius: 20, spreadRadius: 2)],
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(color: AppTheme.primaryGold.withValues(alpha: 0.25), blurRadius: 20, spreadRadius: 2)
+            ],
           ),
           child: Text(
             winnerName.toUpperCase(),
-            style: GoogleFonts.rajdhani(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+            style: GoogleFonts.rajdhani(color: AppTheme.primaryGold, fontSize: 26, fontWeight: FontWeight.bold, letterSpacing: 1.5),
           ),
         ),
       ],
@@ -508,34 +546,56 @@ class _BracketMatchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
-        border: Border.all(
-          color: match.id.startsWith('tbd_') 
-              ? AppTheme.primaryGold.withValues(alpha: 0.05)
-              : (match.isCompleted ? AppTheme.primaryGold : AppTheme.primaryGold.withValues(alpha: 0.2)),
+    final isTbd = match.id.startsWith('tbd_');
+
+    return HoverCard(
+      borderRadius: BorderRadius.circular(10),
+      borderColor: isTbd ? Colors.transparent : AppTheme.primaryGold,
+      scaleAmount: 1.03,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F131C),
+          border: Border.all(
+            color: isTbd 
+                ? Colors.white.withValues(alpha: 0.05)
+                : (match.isCompleted ? AppTheme.primaryGold.withValues(alpha: 0.8) : AppTheme.primaryGold.withValues(alpha: 0.25)),
+            width: match.isCompleted ? 1.2 : 1.0,
+          ),
+          borderRadius: BorderRadius.circular(10),
         ),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _buildPlayerRow(match.player1Ign, match.player1Id, match.player1Score, match.player2Score, match.id.startsWith('tbd_')),
-          Container(height: 1, color: Colors.white.withValues(alpha: 0.05)),
-          _buildPlayerRow(match.player2Ign, match.player2Id, match.player2Score, match.player1Score, match.id.startsWith('tbd_')),
-        ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildPlayerRow(match.player1Ign, match.player1Id, match.player1Score, match.player2Score, match.p1PkScore, match.p2PkScore, isTbd),
+            Container(height: 1, color: Colors.white.withValues(alpha: 0.06)),
+            _buildPlayerRow(match.player2Ign, match.player2Id, match.player2Score, match.player1Score, match.p2PkScore, match.p1PkScore, isTbd),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildPlayerRow(String name, String? playerId, int? score, int? opponentScore, bool isTbd) {
+  Widget _buildPlayerRow(String name, String? playerId, int? score, int? opponentScore, int? pkScore, int? oppPkScore, bool isTbd) {
     final String displayName = name.isEmpty ? (isTbd ? 'TBD' : 'BYE') : name;
-    final bool isWinner = score != null && opponentScore != null && score > opponentScore;
-    final color = isTbd ? AppTheme.textGrey.withValues(alpha: 0.3) : (isWinner ? Colors.white : AppTheme.textGrey);
+    
+    bool isWinner = false;
+    if (score != null && opponentScore != null) {
+      if (score > opponentScore) {
+        isWinner = true;
+      } else if (score == opponentScore && pkScore != null && oppPkScore != null) {
+        isWinner = pkScore > oppPkScore;
+      }
+    }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+    final color = isTbd ? AppTheme.textGrey.withValues(alpha: 0.3) : (isWinner ? AppTheme.primaryGold : Colors.white70);
+    final rowBg = isWinner ? AppTheme.primaryGold.withValues(alpha: 0.12) : Colors.transparent;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: rowBg,
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -545,11 +605,12 @@ class _BracketMatchCard extends StatelessWidget {
               builder: (context, snapshot) {
                 final player = snapshot.data;
                 return Container(
-                  width: 18,
-                  height: 18,
+                  width: 20,
+                  height: 20,
                   margin: const EdgeInsets.only(right: 8),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
+                    border: isWinner ? Border.all(color: AppTheme.primaryGold, width: 1.2) : null,
                     color: Colors.white.withValues(alpha: 0.05),
                   ),
                   child: ClipOval(
@@ -557,9 +618,9 @@ class _BracketMatchCard extends StatelessWidget {
                         ? WebSafeImage(
                             imageUrl: player!.profileImageUrl!,
                             fit: BoxFit.cover,
-                            fallbackWidget: const Icon(Icons.person, size: 10, color: AppTheme.textGrey),
+                            fallbackWidget: Icon(Icons.person, size: 10, color: isWinner ? AppTheme.primaryGold : AppTheme.textGrey),
                           )
-                        : const Icon(Icons.person, size: 10, color: AppTheme.textGrey),
+                        : Icon(Icons.person, size: 10, color: isWinner ? AppTheme.primaryGold : AppTheme.textGrey),
                   ),
                 );
               },
@@ -573,17 +634,37 @@ class _BracketMatchCard extends StatelessWidget {
               displayName.toUpperCase(),
               style: GoogleFonts.rajdhani(
                 color: color, 
-                fontSize: 12, 
+                fontSize: 13, 
                 fontWeight: isWinner ? FontWeight.bold : FontWeight.w600,
                 letterSpacing: 0.5,
               ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          if (!isTbd)
-            Text(
-              score?.toString() ?? '-',
-              style: GoogleFonts.rajdhani(color: isWinner ? AppTheme.primaryGold : AppTheme.textGrey, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+          if (!isTbd && score != null)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  score.toString(),
+                  style: GoogleFonts.rajdhani(
+                    color: isWinner ? AppTheme.primaryGold : AppTheme.textGrey, 
+                    fontSize: 14, 
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (pkScore != null) ...[
+                  const SizedBox(width: 4),
+                  Text(
+                    '($pkScore PK)',
+                    style: GoogleFonts.rajdhani(
+                      color: isWinner ? AppTheme.primaryGold : AppTheme.textGrey, 
+                      fontSize: 10, 
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ],
             ),
         ],
       ),

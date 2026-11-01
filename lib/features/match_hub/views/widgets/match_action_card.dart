@@ -14,6 +14,7 @@ import '../../../../core/utils/responsive_helper.dart';
 import '../../../../core/utils/whatsapp_helper.dart';
 import '../../../../core/widgets/full_screen_image_viewer.dart';
 import '../../../../core/widgets/web_safe_image.dart';
+import '../../../../core/widgets/animated_widgets.dart';
 
 class MatchActionCard extends StatelessWidget {
   final TournamentMatch match;
@@ -33,31 +34,29 @@ class MatchActionCard extends StatelessWidget {
         (currentUserId == match.player1Id || currentUserId == match.player2Id);
     final isMobile = ResponsiveHelper.isMobile(context);
 
-    return Container(
-      padding: EdgeInsets.all(isMobile ? 12 : 20),
-      decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isLive ? AppTheme.primaryGold.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.05),
+    return HoverCard(
+      child: Container(
+        padding: EdgeInsets.all(isMobile ? 12 : 20),
+        decoration: BoxDecoration(
+          color: AppTheme.cardBackground,
+          borderRadius: BorderRadius.circular(16),
         ),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: _buildPlayerInfo(context, match.player1Id, match.player1Ign),
-              ),
-              const SizedBox(width: 4),
-              _buildMatchStatus(context, match, isLive),
-              const SizedBox(width: 4),
-              Expanded(
-                child: _buildPlayerInfo(context, match.player2Id, match.player2Ign),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _buildPlayerInfo(context, match.player1Id, match.player1Ign),
+                ),
+                const SizedBox(width: 4),
+                _buildMatchStatus(context, match, isLive),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: _buildPlayerInfo(context, match.player2Id, match.player2Ign),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -129,8 +128,9 @@ class MatchActionCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildPlayerInfo(BuildContext context, String playerId, String fallbackName) {
     final isMobile = ResponsiveHelper.isMobile(context);

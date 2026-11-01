@@ -10,7 +10,8 @@ class LeaderboardProvider with ChangeNotifier {
   List<Player> _monthlyPlayers = [];
   bool _isLoading = true;
   bool _isMonthlyLoading = true;
-  StreamSubscription<List<Player>>? _subscription;
+  StreamSubscription<List<Player>>? _allTimeSubscription;
+  StreamSubscription<List<Player>>? _monthlySubscription;
 
   List<Player> get players => _players;
   List<Player> get monthlyPlayers => _monthlyPlayers;
@@ -27,7 +28,7 @@ class LeaderboardProvider with ChangeNotifier {
     notifyListeners();
 
     // All-time Players Stream
-    _dbService.getPlayersStream(limit: 100).listen(
+    _allTimeSubscription = _dbService.getPlayersStream(limit: 100).listen(
       (data) {
         _players = sortPlayers(data);
         _isLoading = false;
@@ -41,7 +42,7 @@ class LeaderboardProvider with ChangeNotifier {
     );
 
     // Monthly Players Stream
-    _dbService.getPlayersStream(limit: 100).listen(
+    _monthlySubscription = _dbService.getPlayersStream(limit: 100).listen(
       (data) {
         _monthlyPlayers = sortPlayers(data, isMonthly: true);
         _isMonthlyLoading = false;
@@ -132,7 +133,8 @@ class LeaderboardProvider with ChangeNotifier {
 
   @override
   void dispose() {
-    _subscription?.cancel();
+    _allTimeSubscription?.cancel();
+    _monthlySubscription?.cancel();
     super.dispose();
   }
 }

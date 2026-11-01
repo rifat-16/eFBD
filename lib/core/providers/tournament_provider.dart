@@ -151,35 +151,29 @@ class TournamentProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      var query = FirebaseFirestore.instance.collection('matches')
-          .where('isCompleted', isEqualTo: true)
-          .orderBy('timestamp', descending: true)
-          .limit(15);
-
+      Query query;
       if (tournamentId != null) {
-        query = query.where('tournamentId', isEqualTo: tournamentId);
-      }
-
-      if (_lastHistoryDocument != null) {
-        query = query.startAfterDocument(_lastHistoryDocument!);
+        query = FirebaseFirestore.instance.collection('matches')
+            .where('tournamentId', isEqualTo: tournamentId)
+            .limit(30);
+      } else {
+        query = FirebaseFirestore.instance.collection('matches')
+            .where('isCompleted', isEqualTo: true)
+            .limit(30);
       }
 
       final querySnapshot = await query.get(const GetOptions(source: Source.serverAndCache));
 
-      if (querySnapshot.docs.length < 15) {
-        _hasMoreHistory = false;
-      }
+      _hasMoreHistory = false;
 
       if (querySnapshot.docs.isNotEmpty) {
-        _lastHistoryDocument = querySnapshot.docs.last;
-        final newMatches = querySnapshot.docs.map((doc) => TournamentMatch.fromFirestore(doc)).toList();
-        _matchHistory.addAll(newMatches);
+        var newMatches = querySnapshot.docs.map((doc) => TournamentMatch.fromFirestore(doc)).toList();
+        newMatches = newMatches.where((m) => m.isCompleted).toList();
+        newMatches.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        _matchHistory = newMatches;
       }
     } catch (e) {
-      debugPrint('Error fetching match history for tournament $tournamentId: $e');
-      if (e.toString().contains('failed-precondition')) {
-        debugPrint('MISSING INDEX: Matches (isCompleted: true, tournamentId: $tournamentId, timestamp: desc)');
-      }
+      debugPrint('Error fetching match history: $e');
     } finally {
       _isLoadingHistory = false;
       notifyListeners();

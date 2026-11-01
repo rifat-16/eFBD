@@ -6,6 +6,7 @@ import '../../../core/services/database_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/tournament_provider.dart';
+import '../../../core/widgets/animated_widgets.dart';
 import '../../profile/views/widgets/profile_dialog.dart';
 import '../models/tournament_model.dart';
 import '../models/registration_model.dart';
@@ -78,18 +79,37 @@ class _TournamentListScreenState extends State<TournamentListScreen> {
                       children: [
                         _buildHeroSection(context),
                         SizedBox(height: isMobile ? 32 : 60),
-                        Text(
-                          'ACTIVE TOURNAMENTS',
-                          style: GoogleFonts.rajdhani(
-                            fontSize: isMobile ? 22 : 28,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.primaryGold,
-                            letterSpacing: 2,
-                          ),
+                        Row(
+                          children: [
+                            Container(
+                              width: 4,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryGold,
+                                borderRadius: BorderRadius.circular(2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.primaryGold.withValues(alpha: 0.8),
+                                    blurRadius: 8,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'ACTIVE TOURNAMENTS',
+                              style: GoogleFonts.rajdhani(
+                                fontSize: isMobile ? 22 : 28,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.primaryGold,
+                                letterSpacing: 2,
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 24),
                         if (provider.isLoading && activeTournaments.isEmpty)
-                          const Center(child: CircularProgressIndicator(color: AppTheme.primaryGold))
+                          const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator(color: AppTheme.primaryGold)))
                         else if (activeTournaments.isEmpty)
                           _buildEmptyState()
                         else
@@ -100,21 +120,34 @@ class _TournamentListScreenState extends State<TournamentListScreen> {
                               crossAxisCount: crossAxisCount,
                               crossAxisSpacing: 24,
                               mainAxisSpacing: 24,
-                              childAspectRatio: isMobile ? 1.1 : 1.2,
+                              mainAxisExtent: isMobile ? 280 : 310,
                             ),
                             itemCount: activeTournaments.length,
                             itemBuilder: (context, index) => _buildTournamentCard(context, activeTournaments[index]),
                           ),
                         if (pastTournaments.isNotEmpty) ...[
                           const SizedBox(height: 48),
-                          Text(
-                            'PAST TOURNAMENTS',
-                            style: GoogleFonts.rajdhani(
-                              fontSize: isMobile ? 22 : 28,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textGrey,
-                              letterSpacing: 2,
-                            ),
+                          Row(
+                            children: [
+                              Container(
+                                width: 4,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.textGrey,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'PAST TOURNAMENTS',
+                                style: GoogleFonts.rajdhani(
+                                  fontSize: isMobile ? 22 : 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.textGrey,
+                                  letterSpacing: 2,
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 24),
                           GridView.builder(
@@ -124,7 +157,7 @@ class _TournamentListScreenState extends State<TournamentListScreen> {
                               crossAxisCount: crossAxisCount,
                               crossAxisSpacing: 24,
                               mainAxisSpacing: 24,
-                              childAspectRatio: isMobile ? 1.1 : 1.2,
+                              mainAxisExtent: isMobile ? 280 : 310,
                             ),
                             itemCount: pastTournaments.length,
                             itemBuilder: (context, index) => _buildTournamentCard(context, pastTournaments[index]),
@@ -163,42 +196,50 @@ class _TournamentListScreenState extends State<TournamentListScreen> {
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 20 : 40),
       decoration: BoxDecoration(
+        color: const Color(0xFF0F131C),
         gradient: LinearGradient(
-          colors: [AppTheme.primaryGold.withValues(alpha: 0.2), Colors.transparent],
+          colors: [
+            AppTheme.primaryGold.withValues(alpha: 0.2),
+            const Color(0xFF0F131C),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.1)),
+        border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.3), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryGold.withValues(alpha: 0.1),
+            blurRadius: 24,
+            spreadRadius: 2,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'EFOOTBALLERS BANGLADESH',
-            style: GoogleFonts.rajdhani(
-              fontSize: isMobile ? 14 : 18,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.primaryGold,
-              letterSpacing: isMobile ? 2.5 : 5,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const PulsingBadge(label: 'OFFICIAL ESPORTS ARENA', color: AppTheme.primaryGold),
+            ],
           ),
           const SizedBox(height: 16),
           Text(
             isMobile ? 'THE ULTIMATE ARENA\nFOR PROS' : 'THE ULTIMATE ARENA\nFOR BENGALI PROS',
             style: GoogleFonts.rajdhani(
-              fontSize: isMobile ? 32 : 58,
+              fontSize: isMobile ? 32 : 54,
               fontWeight: FontWeight.bold,
               color: Colors.white,
-              height: 1.1,
+              height: 1.05,
               letterSpacing: 1.2,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Text(
-            'Join the largest eFootball community in Bangladesh. Participate in daily tournaments and win exciting prizes.',
+            'Join the largest eFootball community in Bangladesh. Participate in competitive tournaments and win glory.',
             style: GoogleFonts.poppins(
-              fontSize: isMobile ? 14 : 18,
+              fontSize: isMobile ? 13 : 16,
               color: AppTheme.textGrey,
               height: 1.6,
             ),
@@ -209,14 +250,13 @@ class _TournamentListScreenState extends State<TournamentListScreen> {
   }
 
   Widget _buildTournamentCard(BuildContext context, Tournament tournament) {
-    return InkWell(
+    return HoverCard(
       onTap: () => context.go('/tournaments/${tournament.id}'),
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: AppTheme.cardBackground,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -225,31 +265,41 @@ class _TournamentListScreenState extends State<TournamentListScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildStatusBadge(tournament.status),
-                Text(
-                  tournament.isFree ? 'FREE' : '${tournament.entryFee} BDT',
-                  style: GoogleFonts.rajdhani(
-                    color: AppTheme.primaryGold,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    letterSpacing: 1.2,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryGold.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.4)),
+                  ),
+                  child: Text(
+                    tournament.isFree ? 'FREE ENTRY' : '${tournament.entryFee} BDT',
+                    style: GoogleFonts.rajdhani(
+                      color: AppTheme.primaryGold,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      letterSpacing: 1.0,
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             Text(
               tournament.title,
               style: GoogleFonts.rajdhani(
-                fontSize: 24, 
+                fontSize: 22, 
                 fontWeight: FontWeight.bold, 
                 color: Colors.white, 
-                letterSpacing: 1.2,
+                letterSpacing: 1.0,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               tournament.description,
-              style: GoogleFonts.poppins(color: AppTheme.textGrey, fontSize: 14),
+              style: GoogleFonts.poppins(color: AppTheme.textGrey, fontSize: 13),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -270,13 +320,13 @@ class _TournamentListScreenState extends State<TournamentListScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.people, size: 16, color: AppTheme.textGrey),
-                        const SizedBox(width: 8),
+                        const Icon(Icons.people_alt_rounded, size: 16, color: AppTheme.textGrey),
+                        const SizedBox(width: 6),
                         Text(
                           '$verifiedCount / ${tournament.maxPlayers} Slots',
                           style: GoogleFonts.rajdhani(
                             color: isFull ? Colors.redAccent : AppTheme.textGrey,
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: isFull ? FontWeight.bold : FontWeight.w600,
                             letterSpacing: 0.5,
                           ),
@@ -302,37 +352,38 @@ class _TournamentListScreenState extends State<TournamentListScreen> {
                         ],
                       ],
                     ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: (userReg?.status == RegistrationStatus.pending || 
-                           userReg?.status == RegistrationStatus.verified ||
-                           (userReg == null && isFull)) 
-                  ? null 
-                  : () => _showRegistration(context, tournament),
-                style: userReg?.status == RegistrationStatus.verified 
-                  ? ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accentGreen, 
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: AppTheme.accentGreen.withValues(alpha: 0.8),
-                      disabledForegroundColor: Colors.white,
-                    ) 
-                  : ((userReg?.status == RegistrationStatus.pending || (userReg == null && isFull))
-                      ? ElevatedButton.styleFrom(backgroundColor: Colors.white10) 
-                      : null),
-                child: Text(
-                  userReg == null 
-                    ? (isFull ? 'SLOTS FULL' : 'REGISTER NOW') 
-                    : (userReg.status == RegistrationStatus.pending ? 'PENDING VERIFICATION' :
-                  (userReg.status == RegistrationStatus.verified ? 'JOINED' : 'RE-REGISTER')),
-                  style: GoogleFonts.rajdhani(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-              ),
-            ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: (userReg?.status == RegistrationStatus.pending || 
+                                   userReg?.status == RegistrationStatus.verified ||
+                                   (userReg == null && isFull)) 
+                          ? null 
+                          : () => _showRegistration(context, tournament),
+                        style: userReg?.status == RegistrationStatus.verified 
+                          ? ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.accentGreen, 
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: AppTheme.accentGreen.withValues(alpha: 0.8),
+                              disabledForegroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ) 
+                          : ((userReg?.status == RegistrationStatus.pending || (userReg == null && isFull))
+                              ? ElevatedButton.styleFrom(backgroundColor: Colors.white10, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))) 
+                              : ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)))),
+                        child: Text(
+                          userReg == null 
+                            ? (isFull ? 'SLOTS FULL' : 'REGISTER NOW') 
+                            : (userReg.status == RegistrationStatus.pending ? 'PENDING VERIFICATION' :
+                          (userReg.status == RegistrationStatus.verified ? 'JOINED' : 'RE-REGISTER')),
+                          style: GoogleFonts.rajdhani(
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 );
               },
@@ -344,33 +395,23 @@ class _TournamentListScreenState extends State<TournamentListScreen> {
   }
 
   Widget _buildStatusBadge(TournamentStatus status) {
-    Color color = status == TournamentStatus.upcoming ? AppTheme.primaryGold : (status == TournamentStatus.ongoing ? AppTheme.accentBlue : AppTheme.accentGreen);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        status.name.toUpperCase(),
-        style: GoogleFonts.rajdhani(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
-        ),
-      ),
-    );
+    if (status == TournamentStatus.ongoing) {
+      return const PulsingBadge(label: 'ONGOING', color: AppTheme.accentBlue);
+    }
+    if (status == TournamentStatus.upcoming) {
+      return const PulsingBadge(label: 'REGISTRATION OPEN', color: AppTheme.primaryGold);
+    }
+    return const PulsingBadge(label: 'COMPLETED', color: AppTheme.accentGreen);
   }
 
   Widget _buildEmptyState() {
     return Center(
       child: Column(
         children: [
-          const Icon(Icons.sports_esports, size: 64, color: AppTheme.textGrey),
+          const SizedBox(height: 40),
+          Icon(Icons.sports_esports, size: 64, color: AppTheme.textGrey.withValues(alpha: 0.5)),
           const SizedBox(height: 16),
-          Text('No tournaments found.', style: GoogleFonts.poppins(color: AppTheme.textGrey)),
+          Text('No active tournaments found.', style: GoogleFonts.poppins(color: AppTheme.textGrey)),
         ],
       ),
     );

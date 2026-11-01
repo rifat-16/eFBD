@@ -15,6 +15,8 @@ import '../../features/match_hub/views/match_hub_screen.dart';
 import '../../features/auth/views/complete_profile_screen.dart';
 import '../widgets/app_header.dart';
 import '../widgets/app_drawer.dart';
+import '../widgets/mobile_bottom_navbar.dart';
+import '../utils/responsive_helper.dart';
 
 class AppRouter {
   static GoRouter? _router;
@@ -26,10 +28,12 @@ class AppRouter {
       routes: [
         ShellRoute(
           builder: (context, state, child) {
+            final isMobile = ResponsiveHelper.isMobile(context);
             return Scaffold(
               appBar: const AppHeader(),
               drawer: const AppDrawer(),
               body: child,
+              bottomNavigationBar: isMobile ? const MobileBottomNavbar() : null,
             );
           },
           routes: [

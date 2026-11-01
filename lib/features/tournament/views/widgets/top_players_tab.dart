@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/database_service.dart';
 import '../../../../core/widgets/web_safe_image.dart';
+import '../../../../core/widgets/animated_widgets.dart';
 import '../../models/tournament_model.dart';
 import '../../models/group_model.dart';
 import '../../../match_hub/models/match_model.dart';
@@ -14,10 +15,17 @@ class TopPlayersTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final headerStyle = GoogleFonts.rajdhani(
+      fontWeight: FontWeight.bold, 
+      fontSize: AppTheme.responsiveFontSize(context, 12), 
+      color: AppTheme.primaryGold,
+      letterSpacing: 1,
+    );
+
     return StreamBuilder<List<TournamentMatch>>(
       stream: DatabaseService().getMatches(tournament.id),
       builder: (context, matchSnapshot) {
-        if (!matchSnapshot.hasData) return const Center(child: CircularProgressIndicator());
+        if (!matchSnapshot.hasData) return const Center(child: CircularProgressIndicator(color: AppTheme.primaryGold));
         
         final allMatches = matchSnapshot.data!;
         if (allMatches.isEmpty) return const Center(child: Text('No match data available yet.', style: TextStyle(color: AppTheme.textGrey)));
@@ -80,83 +88,231 @@ class TopPlayersTab extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('TOURNAMENT LEADERBOARD', style: GoogleFonts.rajdhani(fontSize: 20, color: AppTheme.primaryGold, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                    Text('${sortedPlayerIds.length} ACTIVE PLAYERS', style: const TextStyle(color: AppTheme.textGrey, fontSize: 12)),
+                    Row(
+                      children: [
+                        const Icon(Icons.leaderboard_rounded, color: AppTheme.primaryGold, size: 22),
+                        const SizedBox(width: 10),
+                        Text(
+                          'TOURNAMENT LEADERBOARD', 
+                          style: GoogleFonts.rajdhani(
+                            fontSize: 20, 
+                            color: AppTheme.primaryGold, 
+                            fontWeight: FontWeight.bold, 
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: Text(
+                        '${sortedPlayerIds.length} ACTIVE PLAYERS', 
+                        style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 24),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppTheme.cardBackground,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.1)),
-                  ),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columnSpacing: 24,
-                      headingRowHeight: 56,
-                      dataRowMinHeight: 56,
-                      dataRowMaxHeight: 56,
-                      columns: [
-                        DataColumn(label: Text('#', style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1))),
-                        DataColumn(label: Text('PLAYER', style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1))),
-                        DataColumn(label: Text('P', style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1))),
-                        DataColumn(label: Text('W', style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1))),
-                        DataColumn(label: Text('D', style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1))),
-                        DataColumn(label: Text('L', style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1))),
-                        DataColumn(label: Text('GF', style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1))),
-                        DataColumn(label: Text('GA', style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1))),
-                        DataColumn(label: Text('GD', style: GoogleFonts.rajdhani(color: AppTheme.textGrey, fontWeight: FontWeight.bold, letterSpacing: 1))),
-                        DataColumn(label: Text('PTS', style: GoogleFonts.rajdhani(color: AppTheme.primaryGold, fontWeight: FontWeight.bold, letterSpacing: 1))),
-                      ],
-                      rows: sortedPlayerIds.toList().asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final pid = entry.value;
-                        final stats = aggregateStats[pid]!;
-                        final player = players.firstWhere((p) => p.id == pid, orElse: () => Player(id: pid, name: 'Unknown', email: '', ign: 'Player', uid: ''));
 
-                        final isTop3 = index < 3;
-                        return DataRow(cells: [
-                          DataCell(Text('${index + 1}', style: GoogleFonts.rajdhani(color: isTop3 ? AppTheme.primaryGold : Colors.white70, fontWeight: isTop3 ? FontWeight.bold : FontWeight.normal, fontSize: 16))),
-                          DataCell(Row(
-                            mainAxisSize: MainAxisSize.min,
+                // 100% Full-Width Container Card
+                HoverCard(
+                  borderRadius: BorderRadius.circular(16),
+                  borderColor: AppTheme.primaryGold.withValues(alpha: 0.3),
+                  glowColor: AppTheme.primaryGold,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F131C),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppTheme.primaryGold.withValues(alpha: 0.25), width: 1.2),
+                    ),
+                    child: Column(
+                      children: [
+                        // Header Row (100% Full Width)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF161C28),
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                            border: Border(bottom: BorderSide(color: AppTheme.primaryGold.withValues(alpha: 0.25))),
+                          ),
+                          child: Row(
                             children: [
-                              Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white.withValues(alpha: 0.05),
-                                ),
-                                child: ClipOval(
-                                  child: (player.profileImageUrl != null && player.profileImageUrl!.trim().isNotEmpty)
-                                      ? WebSafeImage(
-                                          imageUrl: player.profileImageUrl!,
-                                          fit: BoxFit.cover,
-                                          fallbackWidget: const Icon(Icons.person, size: 12, color: AppTheme.textGrey),
-                                        )
-                                      : const Icon(Icons.person, size: 12, color: AppTheme.textGrey),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(player.ign, style: GoogleFonts.rajdhani(fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: 0.5)),
-                              if (index == 0) ...[
-                                const SizedBox(width: 8),
-                                const Icon(Icons.emoji_events, color: AppTheme.primaryGold, size: 16),
-                              ],
+                              SizedBox(width: 32, child: Text('#', style: headerStyle)),
+                              Expanded(child: Text('PLAYER (IGN)', style: headerStyle)),
+                              SizedBox(width: 32, child: Text('P', style: headerStyle, textAlign: TextAlign.center)),
+                              SizedBox(width: 32, child: Text('W', style: headerStyle, textAlign: TextAlign.center)),
+                              SizedBox(width: 32, child: Text('D', style: headerStyle, textAlign: TextAlign.center)),
+                              SizedBox(width: 32, child: Text('L', style: headerStyle, textAlign: TextAlign.center)),
+                              SizedBox(width: 36, child: Text('GF', style: headerStyle, textAlign: TextAlign.center)),
+                              SizedBox(width: 36, child: Text('GA', style: headerStyle, textAlign: TextAlign.center)),
+                              SizedBox(width: 44, child: Text('GD', style: headerStyle, textAlign: TextAlign.center)),
+                              SizedBox(width: 50, child: Text('PTS', style: headerStyle, textAlign: TextAlign.center)),
                             ],
-                          )),
-                          DataCell(Text('${stats.played}', style: GoogleFonts.poppins(fontSize: 14))),
-                          DataCell(Text('${stats.won}', style: GoogleFonts.poppins(fontSize: 14))),
-                          DataCell(Text('${stats.drawn}', style: GoogleFonts.poppins(fontSize: 14))),
-                          DataCell(Text('${stats.lost}', style: GoogleFonts.poppins(fontSize: 14))),
-                          DataCell(Text('${stats.goalsFor}', style: GoogleFonts.poppins(fontSize: 14))),
-                          DataCell(Text('${stats.goalsAgainst}', style: GoogleFonts.poppins(fontSize: 14))),
-                          DataCell(Text('${stats.goalDifference > 0 ? '+' : ''}${stats.goalDifference}', style: GoogleFonts.poppins(fontSize: 14, color: stats.goalDifference > 0 ? AppTheme.accentGreen : (stats.goalDifference < 0 ? Colors.redAccent : Colors.white)))),
-                          DataCell(Text('${stats.points}', style: GoogleFonts.rajdhani(color: AppTheme.primaryGold, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 0.5))),
-                        ]);
-                      }).toList(),
+                          ),
+                        ),
+
+                        // Player Data Rows (100% Full-Width)
+                        ...sortedPlayerIds.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final pid = entry.value;
+                          final stats = aggregateStats[pid]!;
+                          final player = players.firstWhere(
+                            (p) => p.id == pid, 
+                            orElse: () => Player(id: pid, name: 'Unknown', email: '', ign: 'Player', uid: ''),
+                          );
+
+                          final isRank1 = index == 0;
+                          final isRank2 = index == 1;
+                          final isRank3 = index == 2;
+
+                          final rankColor = isRank1 
+                              ? AppTheme.primaryGold 
+                              : (isRank2 ? const Color(0xFFC0C0C0) : (isRank3 ? const Color(0xFFCD7F32) : Colors.white70));
+
+                          final rowBg = isRank1
+                              ? AppTheme.primaryGold.withValues(alpha: 0.10)
+                              : (isRank2 
+                                  ? const Color(0xFFC0C0C0).withValues(alpha: 0.08) 
+                                  : (isRank3 ? const Color(0xFFCD7F32).withValues(alpha: 0.06) : Colors.transparent));
+
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: rowBg,
+                              border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.04))),
+                            ),
+                            child: Row(
+                              children: [
+                                // Rank #
+                                SizedBox(
+                                  width: 32,
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Container(
+                                      width: 22,
+                                      height: 22,
+                                      alignment: Alignment.center,
+                                      decoration: index < 3
+                                          ? BoxDecoration(color: rankColor, shape: BoxShape.circle)
+                                          : null,
+                                      child: Text(
+                                        '${index + 1}',
+                                        style: TextStyle(
+                                          color: index < 3 ? Colors.black : Colors.white70,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                // Player IGN & Avatar (EXPANDED TO STRETCH FULL WIDTH)
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 28,
+                                        height: 28,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: index < 3 ? rankColor : Colors.white24,
+                                            width: index < 3 ? 1.5 : 1.0,
+                                          ),
+                                        ),
+                                        child: ClipOval(
+                                          child: (player.profileImageUrl != null && player.profileImageUrl!.trim().isNotEmpty)
+                                              ? WebSafeImage(
+                                                  imageUrl: player.profileImageUrl!,
+                                                  fit: BoxFit.cover,
+                                                  fallbackWidget: Icon(Icons.person, size: 14, color: rankColor),
+                                                )
+                                              : Icon(Icons.person, size: 14, color: rankColor),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Flexible(
+                                        child: Text(
+                                          player.ign, 
+                                          style: GoogleFonts.rajdhani(
+                                            fontWeight: FontWeight.bold, 
+                                            fontSize: 15,
+                                            color: index < 3 ? rankColor : Colors.white,
+                                            letterSpacing: 0.5,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      if (isRank1) ...[
+                                        const SizedBox(width: 6),
+                                        const Icon(Icons.emoji_events_rounded, color: AppTheme.primaryGold, size: 16),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+
+                                // P, W, D, L
+                                SizedBox(width: 32, child: Text('${stats.played}', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 13, color: Colors.white))),
+                                SizedBox(width: 32, child: Text('${stats.won}', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 13, color: Colors.white))),
+                                SizedBox(width: 32, child: Text('${stats.drawn}', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 13, color: Colors.white))),
+                                SizedBox(width: 32, child: Text('${stats.lost}', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 13, color: Colors.white))),
+
+                                // GF, GA, GD
+                                SizedBox(width: 36, child: Text('${stats.goalsFor}', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 13, color: Colors.white))),
+                                SizedBox(width: 36, child: Text('${stats.goalsAgainst}', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 13, color: Colors.white))),
+                                SizedBox(
+                                  width: 44,
+                                  child: Text(
+                                    '${stats.goalDifference > 0 ? '+' : ''}${stats.goalDifference}', 
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: stats.goalDifference > 0 ? AppTheme.accentGreen : (stats.goalDifference < 0 ? Colors.redAccent : Colors.white),
+                                    ),
+                                  ),
+                                ),
+
+                                // PTS Badge Cell
+                                SizedBox(
+                                  width: 50,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: index < 3
+                                            ? rankColor.withValues(alpha: 0.2)
+                                            : Colors.white.withValues(alpha: 0.05),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: index < 3
+                                              ? rankColor.withValues(alpha: 0.5)
+                                              : Colors.white10,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        '${stats.points}', 
+                                        style: GoogleFonts.rajdhani(
+                                          color: index < 3 ? rankColor : AppTheme.primaryGold, 
+                                          fontWeight: FontWeight.bold, 
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
                     ),
                   ),
                 ),
